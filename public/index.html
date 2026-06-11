@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROStore - Loja e Orçamentos</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="apple-nav">
+        <div class="nav-content">
+            <span class="logo"><b>PRO</b>Store</span>
+            <div class="nav-links">
+                <a href="#" onclick="mudarAba('vitrine')" id="link-vitrine" class="ativo">Acessórios e Periféricos</a>
+                <a href="#" onclick="mudarAba('setup')" id="link-setup">Monte seu Setup (Hardware)</a>
+            </div>
+        </div>
+    </nav>
+
+    <main id="aba-vitrine" class="aba-conteudo ativa">
+        <section class="hero-section">
+            <div class="hero-text">
+                <h2>Acessórios & Conectividade.</h2>
+                <p>Complete a sua experiência.</p>
+            </div>
+        </section>
+
+        <div class="filtros-apple">
+            <button class="btn-filtro ativo" onclick="filtrarProdutosGerais('Todos', this)">Todos</button>
+            <button class="btn-filtro" onclick="filtrarProdutosGerais('Periféricos', this)">Periféricos</button>
+            <button class="btn-filtro" onclick="filtrarProdutosGerais('Cabos', this)">Cabos</button>
+            <button class="btn-filtro" onclick="filtrarProdutosGerais('Conectividade', this)">Conectividade</button>
+            <button class="btn-filtro" onclick="filtrarProdutosGerais('Áudio', this)">Áudio</button>
+        </div>
+
+        <div class="apple-grid" id="grid-acessorios">
+            </div>
+    </main>
+
+    <main id="aba-setup" class="aba-conteudo hardware-special-zone">
+        <div class="setup-container">
+            <div class="setup-pecas">
+                <div class="section-title-container">
+                    <h2>Componentes de Alta Performance</h2>
+                    <p>O núcleo de poder do seu setup</p>
+                </div>
+                
+                <div class="filtros-dark">
+                    <button class="btn-filtro-dark ativo" onclick="filtrarHardware('Todos', this)">Todos</button>
+                    <button class="btn-filtro-dark" onclick="filtrarHardware('Processador', this)">Processador</button>
+                    <button class="btn-filtro-dark" onclick="filtrarHardware('Placa Mãe', this)">Placa Mãe</button>
+                    <button class="btn-filtro-dark" onclick="filtrarHardware('Memória RAM', this)">Memória RAM</button>
+                    <button class="btn-filtro-dark" onclick="filtrarHardware('Placa de Vídeo', this)">Placa de Vídeo</button>
+                    <button class="btn-filtro-dark" onclick="filtrarHardware('SSD', this)">SSD/HD</button>
+                    <button class="btn-filtro-dark" onclick="filtrarHardware('Fonte ATX', this)">Fonte</button>
+                    <button class="btn-filtro-dark" onclick="filtrarHardware('Refrigeração', this)">Coolers/WC</button>
+                    <button class="btn-filtro-dark" onclick="filtrarHardware('Gabinete', this)">Gabinetes</button>
+                </div>
+
+                <div class="sub-filtros-dark" id="sub-filtros-gabinete" style="display: none; justify-content: center; gap: 10px; margin-bottom: 20px;">
+                    <button class="btn-filtro-dark" onclick="filtrarTipoHardware('Gabinete', 'Gamer', this)">Gamer</button>
+                    <button class="btn-filtro-dark" onclick="filtrarTipoHardware('Gabinete', 'Office', this)">Office</button>
+                </div>
+                
+                <div class="apple-grid dark-theme" id="grid-hardware">
+                    </div>
+            </div>
+
+            <div class="setup-orcamento">
+                <div class="orcamento-dark-panel">
+                    <h2>Seu Orçamento</h2>
+                    <p class="subtitle">Itens selecionados (Geral e Hardware)</p>
+                    
+                    <div id="itens-orcamento" class="itens-orcamento-lista dark-list"></div>
+                    
+                    <div class="totais-box dark-totals">
+                        <p>Custo Bruto: <strong class="custo-txt">R$ <span id="total-custo">0,00</span></strong></p>
+                        <p>Valor Final: <strong class="venda-txt">R$ <span id="total-venda">0,00</span></strong></p>
+                        <hr class="dark-hr">
+                        <p>Lucro Estimado: <strong class="lucro-txt">R$ <span id="total-lucro">0,00</span></strong></p>
+                    </div>
+                    <button class="btn-apple-primary" onclick="abrirEspelhoCliente()">Gerar PDF / Imprimir</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="modal-cliente" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <span class="close-modal" onclick="fecharEspelhoCliente()">&times;</span>
+            <div class="modal-header">
+                <h2>Orçamento Oficial</h2>
+                <p>Validade: 7 dias</p>
+            </div>
+            <table class="tabela-cliente">
+                <thead>
+                    <tr>
+                        <th>Produto/Serviço</th>
+                        <th>Qtd</th>
+                        <th>Vlr. Unit.</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-cliente-corpo"></tbody>
+            </table>
+            <div class="total-cliente-box">
+                <h3>Total a Pagar: R$ <span id="cliente-total-final">0,00</span></h3>
+            </div>
+            <button class="btn-apple-primary btn-imprimir" onclick="window.print()">Imprimir / Salvar PDF</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
