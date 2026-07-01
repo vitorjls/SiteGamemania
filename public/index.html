@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PROStore - Loja e Orçamentos</title>
+    <title>GameMania - Vitrine e Orçamentos</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <nav class="apple-nav">
         <div class="nav-content">
-            <span class="logo"><b>PRO</b>Store</span>
+            <span class="logo"><b>Game</b>Mania</span>
             <div class="nav-links">
-                <a href="#" onclick="mudarAba('vitrine')" id="link-vitrine" class="ativo">Acessórios e Periféricos</a>
-                <a href="#" onclick="mudarAba('setup')" id="link-setup">Monte seu Setup (Hardware)</a>
+                <a href="#" onclick="mudarAba('vitrine')" id="link-vitrine" class="ativo">Vitrine da loja</a>
+                <a href="#" onclick="mudarAba('setup')" id="link-setup">Montar orçamento</a>
             </div>
         </div>
     </nav>
@@ -21,8 +21,9 @@
     <main id="aba-vitrine" class="aba-conteudo ativa">
         <section class="hero-section">
             <div class="hero-text">
-                <h2>Acessórios & Conectividade.</h2>
-                <p>Complete a sua experiência.</p>
+                <span class="eyebrow">Vitrine GameMania</span>
+                <h1>Produtos em loja, prontos para orçamento.</h1>
+                <p>Consulte acessórios, periféricos e componentes com preços claros para atender o cliente com rapidez.</p>
             </div>
         </section>
 
@@ -34,18 +35,18 @@
             <button class="btn-filtro" onclick="filtrarProdutosGerais('Áudio', this)">Áudio</button>
         </div>
 
-        <div class="apple-grid" id="grid-acessorios">
-            </div>
+        <div class="apple-grid" id="grid-acessorios"></div>
     </main>
 
     <main id="aba-setup" class="aba-conteudo hardware-special-zone">
         <div class="setup-container">
             <div class="setup-pecas">
                 <div class="section-title-container">
-                    <h2>Componentes de Alta Performance</h2>
-                    <p>O núcleo de poder do seu setup</p>
+                    <span class="eyebrow dark">Orçamento dinâmico</span>
+                    <h2>Monte o computador do cliente</h2>
+                    <p>Escolha peças, acompanhe valores e aplique descontos no mesmo painel.</p>
                 </div>
-                
+
                 <div class="filtros-dark">
                     <button class="btn-filtro-dark ativo" onclick="filtrarHardware('Todos', this)">Todos</button>
                     <button class="btn-filtro-dark" onclick="filtrarHardware('Processador', this)">Processador</button>
@@ -58,30 +59,53 @@
                     <button class="btn-filtro-dark" onclick="filtrarHardware('Gabinete', this)">Gabinetes</button>
                 </div>
 
-                <div class="sub-filtros-dark" id="sub-filtros-gabinete" style="display: none; justify-content: center; gap: 10px; margin-bottom: 20px;">
+                <div class="sub-filtros-dark" id="sub-filtros-gabinete" style="display: none;">
                     <button class="btn-filtro-dark" onclick="filtrarTipoHardware('Gabinete', 'Gamer', this)">Gamer</button>
                     <button class="btn-filtro-dark" onclick="filtrarTipoHardware('Gabinete', 'Office', this)">Office</button>
                 </div>
-                
-                <div class="apple-grid dark-theme" id="grid-hardware">
-                    </div>
+
+                <div class="apple-grid dark-theme" id="grid-hardware"></div>
             </div>
 
             <div class="setup-orcamento">
-                <div class="orcamento-dark-panel">
-                    <h2>Seu Orçamento</h2>
-                    <p class="subtitle">Itens selecionados (Geral e Hardware)</p>
-                    
-                    <div id="itens-orcamento" class="itens-orcamento-lista dark-list"></div>
-                    
-                    <div class="totais-box dark-totals">
-                        <p>Custo Bruto: <strong class="custo-txt">R$ <span id="total-custo">0,00</span></strong></p>
-                        <p>Valor Final: <strong class="venda-txt">R$ <span id="total-venda">0,00</span></strong></p>
-                        <hr class="dark-hr">
-                        <p>Lucro Estimado: <strong class="lucro-txt">R$ <span id="total-lucro">0,00</span></strong></p>
+                <aside class="orcamento-dark-panel" aria-label="Resumo do orçamento">
+                    <div class="orcamento-header">
+                        <div>
+                            <span class="panel-kicker">Resumo</span>
+                            <h2>Orçamento</h2>
+                        </div>
+                        <span id="contador-itens" class="contador-itens">0 itens</span>
                     </div>
-                    <button class="btn-apple-primary" onclick="abrirEspelhoCliente()">Gerar PDF / Imprimir</button>
-                </div>
+
+                    <div id="itens-orcamento" class="itens-orcamento-lista dark-list"></div>
+
+                    <div class="desconto-box">
+                        <div class="campo-desconto">
+                            <label for="desconto-percentual">Desconto (%)</label>
+                            <input id="desconto-percentual" type="text" inputmode="decimal" placeholder="0" oninput="atualizarDesconto()">
+                        </div>
+
+                        <div class="campo-desconto">
+                            <label for="desconto-valor">Desconto (R$)</label>
+                            <input id="desconto-valor" type="text" inputmode="decimal" placeholder="0,00" oninput="atualizarDesconto()">
+                        </div>
+                    </div>
+
+                    <div class="totais-box dark-totals">
+                        <p><span>Subtotal</span><strong>R$ <span id="subtotal-venda">0,00</span></strong></p>
+                        <p class="linha-desconto"><span>Descontos</span><strong>- R$ <span id="total-desconto">0,00</span></strong></p>
+                        <p><span>Custo interno</span><strong class="custo-txt">R$ <span id="total-custo">0,00</span></strong></p>
+                        <hr class="dark-hr">
+                        <p class="linha-total"><span>Total final</span><strong class="venda-txt">R$ <span id="total-venda">0,00</span></strong></p>
+                        <p><span>Lucro estimado</span><strong class="lucro-txt">R$ <span id="total-lucro">0,00</span></strong></p>
+                        <p><span>Margem</span><strong><span id="margem-lucro">0,0</span>%</strong></p>
+                    </div>
+
+                    <div class="orcamento-actions">
+                        <button class="btn-apple-primary" onclick="abrirEspelhoCliente()">Gerar PDF / Imprimir</button>
+                        <button class="btn-secondary" onclick="limparOrcamento()">Limpar</button>
+                    </div>
+                </aside>
             </div>
         </div>
     </main>
@@ -105,6 +129,8 @@
                 <tbody id="tabela-cliente-corpo"></tbody>
             </table>
             <div class="total-cliente-box">
+                <p>Subtotal: R$ <span id="cliente-subtotal">0,00</span></p>
+                <p>Descontos: - R$ <span id="cliente-desconto">0,00</span></p>
                 <h3>Total a Pagar: R$ <span id="cliente-total-final">0,00</span></h3>
             </div>
             <button class="btn-apple-primary btn-imprimir" onclick="window.print()">Imprimir / Salvar PDF</button>

@@ -1,7 +1,9 @@
 let listaCompleta = [];
 let orcamentoAtual = [];
+let descontoPercentual = 0;
+let descontoValor = 0;
 
-// MAPA INTELIGENTE: Lê o nome do produto e classifica automaticamente
+// MAPA INTELIGENTE: Le o nome do produto e classifica automaticamente
 const mapaCategorias = {
     'Processador': {
         incluir: ['core i3', 'core i5', 'core i7', 'core i9', 'xeon', 'pentium', 'celeron', 'intel core', 'ryzen 3', 'ryzen 5', 'ryzen 7', 'ryzen 9', 'athlon', 'processador', 'cpu'],
@@ -37,36 +39,63 @@ const mapaCategorias = {
     }
 };
 
+function escapeHtml(valor) {
+    return String(valor ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function formatarMoeda(valor) {
+    return Number(valor || 0).toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+function normalizarNumero(valor) {
+    const texto = String(valor || '').trim();
+    if (!texto) return 0;
+
+    const limpo = texto.replace(/\s/g, '').replace(/[^\d,.-]/g, '');
+    if (limpo.includes(',')) {
+        return Number(limpo.replace(/\./g, '').replace(',', '.')) || 0;
+    }
+
+    return Number(limpo) || 0;
+}
+
 function classificarProdutoAutomaticamente(produto) {
     if (!produto.nome) return produto;
-    
+
     const nomeStr = produto.nome.toLowerCase();
     const catStr = (produto.categoria || '').toLowerCase();
-    
-    // Alvo restrito: Apenas produtos marcados na categoria raiz "Hardware" passam pela subdivisão
+
     if (catStr.includes('hardware') || ehProdutoHardware(produto)) {
-        produto.categoria = 'Hardware'; 
-        produto.subcategoria = 'Outros'; // Fallback padrão caso não combine
-        
-        // Loop de verificação nas regras do mapa de categorias
+        produto.categoria = 'Hardware';
+        produto.subcategoria = 'Outros';
+
         for (const [subcat, palavras] of Object.entries(mapaCategorias)) {
-            const encontrou = palavras.some(palavra => {
+            const encontrou = palavras.incluir.some(palavra => {
                 const p = palavra.toLowerCase();
-                
-                // Validação de fronteira de string simples para evitar match incorreto (ex: 'ram' dentro de 'arbaton')
+
                 if (p === 'ram') {
                     return nomeStr.includes('ram ') || nomeStr.endsWith('ram') || nomeStr.includes(' memoria');
                 }
+
                 return nomeStr.includes(p);
             });
 
-            if (encontrou) {
+            const bloqueado = palavras.excluir.some(palavra => nomeStr.includes(palavra.toLowerCase()));
+
+            if (encontrou && !bloqueado) {
                 produto.subcategoria = subcat;
-                break; // Interrompe no primeiro match de maior relevância
+                break;
             }
         }
-        
-        // Classificação secundária exclusiva para segmentar Gabinetes Gamer de Office
+
         if (produto.subcategoria === 'Gabinete') {
             if (nomeStr.includes('office') || nomeStr.includes('slim') || nomeStr.includes('slimdesk')) {
                 produto.tipo = 'Office';
@@ -75,86 +104,99 @@ function classificarProdutoAutomaticamente(produto) {
             }
         }
     }
+
     return produto;
 }
 
-// Verifica se pertence à zona futurista
 function ehProdutoHardware(produto) {
     if (!produto.categoria) return false;
+
     const cat = produto.categoria.trim().toLowerCase();
     const palavrasHardware = ['hardware', 'gabinete', 'gabinetes', 'placa mãe', 'memória', 'cooler', 'watercooler', 'processador', 'fonte', 'placa de vídeo', 'ssd', 'armazenamento', 'refrigeração', 'energia'];
     return palavrasHardware.some(palavra => cat.includes(palavra));
 }
 
-// Gerenciamento de Abas
 function mudarAba(abaId) {
     document.querySelectorAll('.aba-conteudo').forEach(aba => aba.classList.remove('ativa'));
     document.querySelectorAll('.nav-links a').forEach(link => link.classList.remove('ativo'));
+
     document.getElementById(`aba-${abaId}`).classList.add('ativa');
     document.getElementById(`link-${abaId}`).classList.add('ativo');
 }
 
-// Carregar Dados da API
 async function carregarProdutos() {
     try {
         const resposta = await fetch('/api/produtos');
         const dados = await resposta.json();
-        
-        // Passa todos os produtos pelo leitor automático
+
         listaCompleta = dados.map(item => classificarProdutoAutomaticamente(item));
-        
+
         const btnTodosClaro = document.querySelector('.btn-filtro.ativo');
         const btnTodosDark = document.querySelector('.btn-filtro-dark.ativo');
-        
+
         if (btnTodosClaro) filtrarProdutosGerais('Todos', btnTodosClaro);
         if (btnTodosDark) filtrarHardware('Todos', btnTodosDark);
-        
     } catch (erro) {
         console.error('Erro ao carregar dados:', erro);
     }
 }
 
-// Renderiza a Vitrine Clara (Acessórios)
 function renderizarAcessorios(produtos) {
     const grid = document.getElementById('grid-acessorios');
     if (!grid) return;
+
     grid.innerHTML = '';
-    produtos.forEach(produto => {
-        if (!ehProdutoHardware(produto)) {
-            grid.appendChild(criarCardProduto(produto, false));
-        }
-    });
+    const itens = produtos.filter(produto => !ehProdutoHardware(produto));
+
+    if (itens.length === 0) {
+        grid.innerHTML = '<div class="estado-vazio">Nenhum produto encontrado nesta categoria.</div>';
+        return;
+    }
+
+    itens.forEach(produto => grid.appendChild(criarCardProduto(produto, false)));
 }
 
-// Renderiza a Vitrine Escura (Setup/Hardware)
 function renderizarHardware(produtos) {
     const grid = document.getElementById('grid-hardware');
     if (!grid) return;
+
     grid.innerHTML = '';
-    produtos.forEach(produto => {
-        if (ehProdutoHardware(produto)) {
-            grid.appendChild(criarCardProduto(produto, true));
-        }
-    });
+    const itens = produtos.filter(produto => ehProdutoHardware(produto));
+
+    if (itens.length === 0) {
+        grid.innerHTML = '<div class="estado-vazio">Nenhum componente encontrado neste filtro.</div>';
+        return;
+    }
+
+    itens.forEach(produto => grid.appendChild(criarCardProduto(produto, true)));
 }
 
 function criarCardProduto(produto, isDark) {
     const card = document.createElement('div');
+    const nome = escapeHtml(produto.nome);
+    const categoria = escapeHtml(produto.subcategoria || produto.categoria || 'Sem categoria');
+    const estoque = Number(produto.estoque || 0);
+    const precoVenda = Number(produto.preco_venda || 0);
+    const imagem = escapeHtml(produto.imagem || 'https://via.placeholder.com/300');
+    const semEstoque = estoque <= 0;
+
     card.className = 'apple-card';
     card.innerHTML = `
         <div>
-            <p class="categoria-tag" style="${isDark ? 'color:#2997ff;' : ''}">${produto.subcategoria || produto.categoria || 'Sem categoria'}</p>
-            <h3 title="${produto.nome}">${produto.nome}</h3>
-            <p style="font-size: 14px; margin-bottom: 10px;">Estoque: ${produto.estoque} un</p>
+            <p class="categoria-tag" style="${isDark ? 'color:#6ab7ff;' : ''}">${categoria}</p>
+            <h3 title="${nome}">${nome}</h3>
+            <span class="estoque-tag">Estoque: ${estoque} un</span>
         </div>
-        <img src="${produto.imagem || 'https://via.placeholder.com/300'}" alt="${produto.nome}">
-        <p class="preco">R$ ${produto.preco_venda.toFixed(2).replace('.', ',')}</p>
-        <button class="btn-apple-primary" style="margin-top: 15px; padding: 8px; font-size: 14px;" onclick="adicionarAoOrcamento(${produto.id})">Adicionar</button>
+        <img src="${imagem}" alt="${nome}">
+        <div>
+            <p class="preco">R$ ${formatarMoeda(precoVenda)}</p>
+            <button class="btn-apple-primary" style="margin-top: 14px;" onclick="adicionarAoOrcamento(${produto.id})" ${semEstoque ? 'disabled' : ''}>${semEstoque ? 'Sem estoque' : 'Adicionar'}</button>
+        </div>
     `;
+
     return card;
 }
 
-// Filtros
 function filtrarProdutosGerais(categoriaPesquisa, btnElement) {
     document.querySelectorAll('.btn-filtro').forEach(btn => btn.classList.remove('ativo'));
     btnElement.classList.add('ativo');
@@ -163,6 +205,7 @@ function filtrarProdutosGerais(categoriaPesquisa, btnElement) {
     if (categoriaPesquisa !== 'Todos') {
         filtrados = filtrados.filter(p => p.categoria && p.categoria.toLowerCase().includes(categoriaPesquisa.toLowerCase()));
     }
+
     renderizarAcessorios(filtrados);
 }
 
@@ -180,75 +223,186 @@ function filtrarHardware(subcategoriaPesquisa, btnElement) {
     if (subcategoriaPesquisa !== 'Todos') {
         filtrados = filtrados.filter(p => p.subcategoria && p.subcategoria.toLowerCase() === subcategoriaPesquisa.toLowerCase());
     }
-    
+
     renderizarHardware(filtrados);
 }
 
 function filtrarTipoHardware(subcategoria, tipoPesquisa, btnElement) {
-    let filtrados = listaCompleta.filter(p => 
+    document.querySelectorAll('#sub-filtros-gabinete .btn-filtro-dark').forEach(btn => btn.classList.remove('ativo'));
+    btnElement.classList.add('ativo');
+
+    let filtrados = listaCompleta.filter(p =>
         ehProdutoHardware(p) &&
-        p.subcategoria && p.subcategoria.toLowerCase() === subcategoria.toLowerCase()
+        p.subcategoria &&
+        p.subcategoria.toLowerCase() === subcategoria.toLowerCase()
     );
 
     if (tipoPesquisa !== 'Todos') {
         filtrados = filtrados.filter(p => p.tipo && p.tipo.toLowerCase() === tipoPesquisa.toLowerCase());
     }
+
     renderizarHardware(filtrados);
 }
 
-// Lógica de Orçamento
 function adicionarAoOrcamento(id) {
     const produto = listaCompleta.find(p => p.id === id);
     if (!produto) return;
+
     const itemExistente = orcamentoAtual.find(item => item.id === id);
-    if (itemExistente) { itemExistente.quantidade += 1; } else { orcamentoAtual.push({ ...produto, quantidade: 1 }); }
+    if (itemExistente) {
+        itemExistente.quantidade += 1;
+    } else {
+        orcamentoAtual.push({ ...produto, quantidade: 1 });
+    }
+
+    atualizarPainelInterno();
+}
+
+function alterarQuantidade(id, delta) {
+    const item = orcamentoAtual.find(produto => produto.id === id);
+    if (!item) return;
+
+    item.quantidade += delta;
+    if (item.quantidade <= 0) {
+        removerItemOrcamento(id);
+        return;
+    }
+
     atualizarPainelInterno();
 }
 
 function removerDoOrcamento(id) {
-    const index = orcamentoAtual.findIndex(item => item.id === id);
-    if (index === -1) return;
-    if (orcamentoAtual[index].quantidade > 1) { orcamentoAtual[index].quantidade -= 1; } else { orcamentoAtual.splice(index, 1); }
+    alterarQuantidade(id, -1);
+}
+
+function removerItemOrcamento(id) {
+    orcamentoAtual = orcamentoAtual.filter(item => item.id !== id);
     atualizarPainelInterno();
+}
+
+function atualizarDesconto() {
+    const campoPercentual = document.getElementById('desconto-percentual');
+    const campoValor = document.getElementById('desconto-valor');
+
+    descontoPercentual = Math.min(Math.max(normalizarNumero(campoPercentual?.value), 0), 100);
+    descontoValor = Math.max(normalizarNumero(campoValor?.value), 0);
+
+    atualizarPainelInterno();
+}
+
+function calcularTotais() {
+    const totalCusto = orcamentoAtual.reduce((total, item) => total + (Number(item.preco_custo || 0) * item.quantidade), 0);
+    const subtotalVenda = orcamentoAtual.reduce((total, item) => total + (Number(item.preco_venda || 0) * item.quantidade), 0);
+    const descontoPorPercentual = subtotalVenda * (descontoPercentual / 100);
+    const totalDesconto = Math.min(subtotalVenda, descontoPorPercentual + descontoValor);
+    const totalFinal = Math.max(subtotalVenda - totalDesconto, 0);
+    const lucro = totalFinal - totalCusto;
+    const margem = totalFinal > 0 ? (lucro / totalFinal) * 100 : 0;
+
+    return {
+        totalCusto,
+        subtotalVenda,
+        totalDesconto,
+        totalFinal,
+        lucro,
+        margem
+    };
 }
 
 function atualizarPainelInterno() {
     const container = document.getElementById('itens-orcamento');
+    if (!container) return;
+
     container.innerHTML = '';
-    let totalCusto = 0; let totalVenda = 0;
+
+    if (orcamentoAtual.length === 0) {
+        container.innerHTML = '<div class="orcamento-vazio">Nenhum item adicionado ao orçamento.</div>';
+    }
 
     orcamentoAtual.forEach(item => {
-        totalCusto += (item.preco_custo * item.quantidade);
-        totalVenda += (item.preco_venda * item.quantidade);
+        const nome = escapeHtml(item.nome);
+        const precoVenda = Number(item.preco_venda || 0);
+        const precoCusto = Number(item.preco_custo || 0);
+        const subtotal = precoVenda * item.quantidade;
         const linha = document.createElement('div');
+
         linha.className = 'item-linha';
-        linha.innerHTML = `<span><b>${item.quantidade}x</b> ${item.nome.substring(0, 20)}</span>
-            <div style="display:flex; align-items:center; gap:10px;">
-                <span>R$ ${(item.preco_venda * item.quantidade).toFixed(2).replace('.', ',')}</span>
-                <button class="btn-remove" onclick="removerDoOrcamento(${item.id})">&times;</button>
-            </div>`;
+        linha.innerHTML = `
+            <div class="item-info">
+                <strong title="${nome}">${nome}</strong>
+                <span>Unitario R$ ${formatarMoeda(precoVenda)} | Custo R$ ${formatarMoeda(precoCusto)}</span>
+            </div>
+            <div class="item-actions">
+                <strong class="item-subtotal">R$ ${formatarMoeda(subtotal)}</strong>
+                <div class="qtd-controle">
+                    <button class="btn-qtd" onclick="alterarQuantidade(${item.id}, -1)" aria-label="Diminuir quantidade">-</button>
+                    <span>${item.quantidade}</span>
+                    <button class="btn-qtd" onclick="alterarQuantidade(${item.id}, 1)" aria-label="Aumentar quantidade">+</button>
+                    <button class="btn-remove" onclick="removerItemOrcamento(${item.id})" aria-label="Remover item">&times;</button>
+                </div>
+            </div>
+        `;
+
         container.appendChild(linha);
     });
 
-    document.getElementById('total-custo').innerText = totalCusto.toFixed(2).replace('.', ',');
-    document.getElementById('total-venda').innerText = totalVenda.toFixed(2).replace('.', ',');
-    document.getElementById('total-lucro').innerText = (totalVenda - totalCusto).toFixed(2).replace('.', ',');
+    const totais = calcularTotais();
+    const quantidadeItens = orcamentoAtual.reduce((total, item) => total + item.quantidade, 0);
+
+    document.getElementById('contador-itens').innerText = quantidadeItens === 1 ? '1 item' : `${quantidadeItens} itens`;
+    document.getElementById('subtotal-venda').innerText = formatarMoeda(totais.subtotalVenda);
+    document.getElementById('total-desconto').innerText = formatarMoeda(totais.totalDesconto);
+    document.getElementById('total-custo').innerText = formatarMoeda(totais.totalCusto);
+    document.getElementById('total-venda').innerText = formatarMoeda(totais.totalFinal);
+    document.getElementById('total-lucro').innerText = formatarMoeda(totais.lucro);
+    document.getElementById('margem-lucro').innerText = totais.margem.toFixed(1).replace('.', ',');
+}
+
+function limparOrcamento() {
+    if (orcamentoAtual.length === 0) return;
+
+    const confirmar = confirm('Limpar todos os itens do orçamento?');
+    if (!confirmar) return;
+
+    orcamentoAtual = [];
+    atualizarPainelInterno();
 }
 
 function abrirEspelhoCliente() {
-    if(orcamentoAtual.length === 0) return alert("Adicione itens ao orçamento primeiro.");
+    if (orcamentoAtual.length === 0) {
+        alert('Adicione itens ao orçamento primeiro.');
+        return;
+    }
+
     const corpo = document.getElementById('tabela-cliente-corpo');
+    const totais = calcularTotais();
+
     corpo.innerHTML = '';
-    let totalCliente = 0;
     orcamentoAtual.forEach(item => {
-        const sub = item.preco_venda * item.quantidade;
-        totalCliente += sub;
-        corpo.innerHTML += `<tr><td>${item.nome}</td><td>${item.quantidade}</td><td>R$ ${item.preco_venda.toFixed(2).replace('.', ',')}</td><td><b>R$ ${sub.toFixed(2).replace('.', ',')}</b></td></tr>`;
+        const nome = escapeHtml(item.nome);
+        const sub = Number(item.preco_venda || 0) * item.quantidade;
+
+        corpo.innerHTML += `
+            <tr>
+                <td>${nome}</td>
+                <td>${item.quantidade}</td>
+                <td>R$ ${formatarMoeda(item.preco_venda)}</td>
+                <td><b>R$ ${formatarMoeda(sub)}</b></td>
+            </tr>
+        `;
     });
-    document.getElementById('cliente-total-final').innerText = totalCliente.toFixed(2).replace('.', ',');
+
+    document.getElementById('cliente-subtotal').innerText = formatarMoeda(totais.subtotalVenda);
+    document.getElementById('cliente-desconto').innerText = formatarMoeda(totais.totalDesconto);
+    document.getElementById('cliente-total-final').innerText = formatarMoeda(totais.totalFinal);
     document.getElementById('modal-cliente').style.display = 'flex';
 }
 
-function fecharEspelhoCliente() { document.getElementById('modal-cliente').style.display = 'none'; }
+function fecharEspelhoCliente() {
+    document.getElementById('modal-cliente').style.display = 'none';
+}
 
-window.onload = carregarProdutos;
+window.onload = () => {
+    carregarProdutos();
+    atualizarPainelInterno();
+};
