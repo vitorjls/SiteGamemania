@@ -551,13 +551,35 @@ a:focus-visible {
 .item-linha {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 10px;
+    gap: 12px;
     align-items: start;
     color: #d7deea;
     background: var(--dark-panel-soft);
     border: 1px solid var(--dark-line);
     border-radius: 8px;
     padding: 12px;
+}
+
+.item-info {
+    display: grid;
+    grid-template-columns: 58px minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.item-thumb {
+    width: 58px;
+    height: 58px;
+    object-fit: contain;
+    background: #11151c;
+    border: 1px solid var(--dark-line);
+    border-radius: 8px;
+    padding: 5px;
+}
+
+.item-text {
+    min-width: 0;
 }
 
 .item-info strong {
@@ -915,6 +937,15 @@ a:focus-visible {
 
     .item-linha {
         grid-template-columns: 1fr;
+    }
+
+    .item-info {
+        grid-template-columns: 64px minmax(0, 1fr);
+    }
+
+    .item-thumb {
+        width: 64px;
+        height: 64px;
     }
 
     .item-actions {

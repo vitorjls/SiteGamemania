@@ -67,6 +67,52 @@ function normalizarNumero(valor) {
     return Number(limpo) || 0;
 }
 
+function gerarImagemFallback(produto) {
+    const subcategoria = String(produto.subcategoria || produto.categoria || 'Hardware');
+    const rotulos = {
+        'Processador': 'CPU',
+        'Placa Mãe': 'MB',
+        'Placa de Vídeo': 'GPU',
+        'Memória RAM': 'RAM',
+        'SSD': 'SSD',
+        'Fonte ATX': 'PSU',
+        'Refrigeração': 'COOL',
+        'Gabinete': 'CASE'
+    };
+    const rotulo = rotulos[subcategoria] || 'PC';
+    const titulo = subcategoria.replace(/[<>&"']/g, '').slice(0, 18).toUpperCase();
+    const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="320" height="240" viewBox="0 0 320 240">
+            <defs>
+                <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+                    <stop offset="0" stop-color="#1f6feb"/>
+                    <stop offset="1" stop-color="#10233f"/>
+                </linearGradient>
+            </defs>
+            <rect width="320" height="240" rx="20" fill="#11151c"/>
+            <rect x="28" y="28" width="264" height="184" rx="18" fill="url(#g)" opacity="0.28"/>
+            <rect x="78" y="58" width="164" height="104" rx="16" fill="#172033" stroke="#6ab7ff" stroke-width="4"/>
+            <g stroke="#6ab7ff" stroke-width="6" stroke-linecap="round" opacity="0.9">
+                <path d="M72 82H48M72 116H48M72 150H48M248 82h24M248 116h24M248 150h24"/>
+                <path d="M112 52V34M160 52V34M208 52V34M112 186v20M160 186v20M208 186v20"/>
+            </g>
+            <text x="160" y="119" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="800" fill="#f4f7fb">${rotulo}</text>
+            <text x="160" y="204" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#a7b0c0">${titulo}</text>
+        </svg>
+    `;
+
+    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
+function obterImagemProduto(produto) {
+    const imagem = String(produto.imagem || '').trim();
+    if (!imagem || imagem.includes('via.placeholder.com')) {
+        return gerarImagemFallback(produto);
+    }
+
+    return imagem;
+}
+
 function classificarProdutoAutomaticamente(produto) {
     if (!produto.nome) return produto;
 
@@ -177,7 +223,8 @@ function criarCardProduto(produto, isDark) {
     const categoria = escapeHtml(produto.subcategoria || produto.categoria || 'Sem categoria');
     const estoque = Number(produto.estoque || 0);
     const precoVenda = Number(produto.preco_venda || 0);
-    const imagem = escapeHtml(produto.imagem || 'https://via.placeholder.com/300');
+    const imagem = escapeHtml(obterImagemProduto(produto));
+    const imagemFallback = escapeHtml(gerarImagemFallback(produto));
     const semEstoque = estoque <= 0;
 
     card.className = 'apple-card';
@@ -187,7 +234,7 @@ function criarCardProduto(produto, isDark) {
             <h3 title="${nome}">${nome}</h3>
             <span class="estoque-tag">Estoque: ${estoque} un</span>
         </div>
-        <img src="${imagem}" alt="${nome}">
+        <img src="${imagem}" alt="${nome}" onerror="this.onerror=null;this.src='${imagemFallback}'">
         <div>
             <p class="preco">R$ ${formatarMoeda(precoVenda)}</p>
             <button class="btn-apple-primary" style="margin-top: 14px;" onclick="adicionarAoOrcamento(${produto.id})" ${semEstoque ? 'disabled' : ''}>${semEstoque ? 'Sem estoque' : 'Adicionar'}</button>
@@ -324,13 +371,18 @@ function atualizarPainelInterno() {
         const precoVenda = Number(item.preco_venda || 0);
         const precoCusto = Number(item.preco_custo || 0);
         const subtotal = precoVenda * item.quantidade;
+        const imagem = escapeHtml(obterImagemProduto(item));
+        const imagemFallback = escapeHtml(gerarImagemFallback(item));
         const linha = document.createElement('div');
 
         linha.className = 'item-linha';
         linha.innerHTML = `
             <div class="item-info">
-                <strong title="${nome}">${nome}</strong>
-                <span>Unitario R$ ${formatarMoeda(precoVenda)} | Custo R$ ${formatarMoeda(precoCusto)}</span>
+                <img class="item-thumb" src="${imagem}" alt="${nome}" onerror="this.onerror=null;this.src='${imagemFallback}'">
+                <div class="item-text">
+                    <strong title="${nome}">${nome}</strong>
+                    <span>Unitario R$ ${formatarMoeda(precoVenda)} | Custo R$ ${formatarMoeda(precoCusto)}</span>
+                </div>
             </div>
             <div class="item-actions">
                 <strong class="item-subtotal">R$ ${formatarMoeda(subtotal)}</strong>
