@@ -104,12 +104,41 @@
                     <label class="sort-control dark" for="ordenacao-hardware">
                         <span>Ordenar</span>
                         <select id="ordenacao-hardware" onchange="alterarOrdenacao('hardware', this.value)">
+                            <option value="estoque-custo">Mais estoque</option>
                             <option value="nome-az">A-Z</option>
                             <option value="preco-asc">Menor pre&ccedil;o</option>
                             <option value="preco-desc">Maior pre&ccedil;o</option>
                         </select>
                     </label>
                 </div>
+
+                <section class="build-tools" aria-label="Montagem guiada">
+                    <div class="build-tools-header">
+                        <div>
+                            <p class="eyebrow">Game Mania</p>
+                            <h3>Computadores padr&atilde;o</h3>
+                        </div>
+                        <button class="btn-secondary compact" type="button" onclick="iniciarAssistente()">Montar passo a passo</button>
+                    </div>
+
+                    <div class="preset-grid" id="presets-gamemania"></div>
+                    <p class="build-status" id="preset-status" aria-live="polite"></p>
+
+                    <div class="wizard-box" id="wizard-box" style="display: none;">
+                        <div class="wizard-topline">
+                            <span id="wizard-progress">Etapa 1 de 8</span>
+                            <button type="button" onclick="fecharAssistente()">Fechar</button>
+                        </div>
+                        <h3 id="wizard-title">Escolha uma pe&ccedil;a</h3>
+                        <p id="wizard-help"></p>
+                        <div class="wizard-options" id="wizard-options"></div>
+                        <div class="wizard-actions">
+                            <button type="button" onclick="voltarEtapaAssistente()">Voltar</button>
+                            <button type="button" onclick="pularEtapaAssistente()">Pular</button>
+                            <button type="button" onclick="abrirListaLivreAssistente()">Selecionar outros</button>
+                        </div>
+                    </div>
+                </section>
 
                 <div class="apple-grid dark-theme" id="grid-hardware"></div>
             </section>
@@ -130,7 +159,30 @@
                         <p><span>Total &agrave; vista</span><strong id="total-vista">R$ 0,00</strong></p>
                         <p><span>Total parcelado</span><strong id="total-parcelado">R$ 0,00</strong></p>
                     </div>
-                    <button class="btn-primary full" type="button" onclick="abrirEspelhoCliente()">Gerar or&ccedil;amento</button>
+
+                    <div class="pc-visual-panel" aria-label="Computador virtual">
+                        <div class="pc-visual-header">
+                            <p class="eyebrow">PC virtual</p>
+                            <h3>Montagem</h3>
+                        </div>
+                        <div class="pc-case">
+                            <div class="pc-slot slot-gabinete" id="pc-slot-gabinete"><span>Gabinete</span><strong>Aguardando</strong></div>
+                            <div class="pc-slot slot-placa" id="pc-slot-placa-mae"><span>Placa-mae</span><strong>Aguardando</strong></div>
+                            <div class="pc-slot slot-cpu" id="pc-slot-processador"><span>Processador</span><strong>Aguardando</strong></div>
+                            <div class="pc-slot slot-memoria" id="pc-slot-memoria"><span>Memoria RAM</span><strong>Aguardando</strong></div>
+                            <div class="pc-slot slot-ssd" id="pc-slot-ssd"><span>SSD</span><strong>Aguardando</strong></div>
+                            <div class="pc-slot slot-fonte" id="pc-slot-fonte"><span>Fonte</span><strong>Aguardando</strong></div>
+                            <div class="pc-slot slot-cooler" id="pc-slot-cooler"><span>Cooler</span><strong>Aguardando</strong></div>
+                            <div class="pc-slot slot-fans" id="pc-slot-fans"><span>Fans</span><strong>Aguardando</strong></div>
+                            <div class="pc-slot slot-wifi" id="pc-slot-wifi"><span>Wi-Fi</span><strong>Aguardando</strong></div>
+                            <div class="pc-slot slot-gpu" id="pc-slot-gpu"><span>GPU</span><strong>Aguardando</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="budget-actions">
+                        <button class="btn-primary full" type="button" onclick="abrirEspelhoCliente()">Gerar or&ccedil;amento</button>
+                        <button class="btn-clear-cart" type="button" onclick="limparOrcamento()">Esvaziar carrinho</button>
+                    </div>
                 </div>
             </aside>
         </div>

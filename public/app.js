@@ -6,7 +6,13 @@ const FATOR_PARCELADO = 1.7;
 
 const estadoFiltros = {
     vitrine: { categoria: 'Todos', ordenacao: 'nome-az' },
-    hardware: { categoria: 'Todos', tipo: 'Todos', ordenacao: 'nome-az', busca: '' }
+    hardware: { categoria: 'Todos', tipo: 'Todos', ordenacao: 'estoque-custo', busca: '' }
+};
+
+const wizardState = {
+    ativo: false,
+    etapa: 0,
+    plataforma: null
 };
 
 const regrasHardware = [
@@ -83,6 +89,143 @@ const categoriasHardwareFixas = [
     'Outros'
 ];
 
+const presetsGamemania = [
+    {
+        id: 'base-5500',
+        nome: '5500 sem GPU',
+        subtitulo: 'BASE GAMER MELHOR CUSTO',
+        itens: [
+            { termos: ['processador', 'ryzen 5 5500'], quantidade: 1 },
+            { termos: ['memoria', 'ddr4', 'goldkey'], quantidade: 2 },
+            { termos: ['ssd', 'hawking', '480gb'], quantidade: 1 },
+            { termos: ['gabinete', 'bg-064', 'pure', 'preto'], quantidade: 1 },
+            { termos: ['kit', '3 fans', 'preto', 'k06argb'], quantidade: 1 },
+            { termos: ['fonte', 'dn700', '700w'], quantidade: 1 },
+            { termos: ['asus', 'prime', 'a520m'], quantidade: 1 }
+        ]
+    },
+    {
+        id: 'base-5700',
+        nome: '5700 Base Alto Padr\u00e3o',
+        subtitulo: 'Ryzen 7 sem GPU',
+        itens: [
+            { termos: ['processador', 'ryzen 7 5700x'], quantidade: 1 },
+            { termos: ['memoria', 'ddr4', 'goldkey'], quantidade: 2 },
+            { termos: ['ssd', 'hawking', '480gb'], quantidade: 1 },
+            { termos: ['gabinete', 'bg-064', 'pure', 'preto'], quantidade: 1 },
+            { termos: ['kit', '3 fans', 'preto', 'k06argb'], quantidade: 1 },
+            { termos: ['fonte', 'dn700', '700w'], quantidade: 1 },
+            { termos: ['asus', 'prime', 'a520m'], quantidade: 1 }
+        ]
+    },
+    {
+        id: 'vega-5600gt',
+        nome: 'Ryzen com VEGA 5600GT',
+        subtitulo: 'APU com Radeon integrada',
+        itens: [
+            { termos: ['memoria', 'ddr4', 'goldkey'], quantidade: 2 },
+            { termos: ['ssd', 'hawking', '480gb'], quantidade: 1 },
+            { termos: ['gabinete', 'bg-064', 'pure', 'preto'], quantidade: 1 },
+            { termos: ['kit', '3 fans', 'preto', 'k06argb'], quantidade: 1 },
+            { termos: ['processador', 'ryzen 5 5600gt'], quantidade: 1 },
+            { termos: ['asus', 'prime', 'a520m'], quantidade: 1 },
+            { termos: ['fonte', 'blu600-atps2'], quantidade: 1 }
+        ]
+    }
+];
+
+const etapasAssistente = [
+    {
+        id: 'gabinete',
+        titulo: 'Escolha o gabinete',
+        ajuda: 'Comece pela apar\u00eancia e espa\u00e7o interno. Estes s\u00e3o modelos comuns da loja.',
+        categoriaLivre: 'Gabinete',
+        tipo: 'termos',
+        opcoes: [
+            ['gabinete', 'bg-064', 'pure', 'branco'],
+            ['gabinete', 'bg-064', 'pure', 'preto'],
+            ['gabinete', 'bg-050', 'x-frame', 'preto'],
+            ['gabinete', 'bg-050', 'x-frame', 'branco'],
+            ['gabinete', 'arbaton', 'draxen']
+        ]
+    },
+    {
+        id: 'processador',
+        titulo: 'Escolha o processador',
+        ajuda: 'A escolha do processador define quais placas-m\u00e3e ser\u00e3o sugeridas na pr\u00f3xima etapa.',
+        categoriaLivre: 'Processador',
+        tipo: 'processador',
+        opcoes: [
+            { label: 'Ryzen 5 5500', termos: ['processador', 'ryzen 5 5500'], plataforma: 'ryzen' },
+            { label: 'Ryzen 7 5700X', termos: ['processador', 'ryzen 7 5700x'], plataforma: 'ryzen' },
+            { label: 'Ryzen 5 5600GT', termos: ['processador', 'ryzen 5 5600gt'], plataforma: 'ryzen' },
+            { label: 'Ryzen 5 4600G', termos: ['processador', 'ryzen 5 4600g'], plataforma: 'ryzen' },
+            { label: 'Intel Core i5 12600K', termos: ['processador', 'i5', '12600'], plataforma: 'intel' }
+        ]
+    },
+    {
+        id: 'placa-mae',
+        titulo: 'Escolha a placa-m\u00e3e',
+        ajuda: 'As op\u00e7\u00f5es mudam conforme o processador escolhido.',
+        categoriaLivre: 'Placa M\u00e3e',
+        tipo: 'placa-mae'
+    },
+    {
+        id: 'cooler',
+        titulo: 'Cooler',
+        ajuda: 'Escolha um cooler quando o processador ou o gabinete pedir uma refrigera\u00e7\u00e3o melhor.',
+        categoriaLivre: 'Refrigera\u00e7\u00e3o',
+        tipo: 'categoria',
+        subcategoria: 'Refrigera\u00e7\u00e3o',
+        limite: 5
+    },
+    {
+        id: 'memoria',
+        titulo: 'Mem\u00f3ria RAM',
+        ajuda: 'Para setups gamer, 2 pentes costumam ser uma boa base. Voc\u00ea pode adicionar mais de uma unidade.',
+        categoriaLivre: 'Mem\u00f3ria RAM',
+        tipo: 'categoria',
+        subcategoria: 'Mem\u00f3ria RAM',
+        limite: 5
+    },
+    {
+        id: 'ssd',
+        titulo: 'SSD',
+        ajuda: 'Priorize SSDs com bom estoque e custo equilibrado.',
+        categoriaLivre: 'SSD',
+        tipo: 'categoria',
+        subcategoria: 'SSD',
+        limite: 5
+    },
+    {
+        id: 'fonte',
+        titulo: 'Fonte',
+        ajuda: 'A fonte precisa acompanhar a configura\u00e7\u00e3o, principalmente se houver placa de v\u00eddeo dedicada.',
+        categoriaLivre: 'Fonte ATX',
+        tipo: 'categoria',
+        subcategoria: 'Fonte ATX',
+        limite: 5
+    },
+    {
+        id: 'fans',
+        titulo: 'Fans adicionais',
+        ajuda: 'Fans ajudam na temperatura e tamb\u00e9m no visual do gabinete.',
+        categoriaLivre: 'Refrigera\u00e7\u00e3o',
+        tipo: 'busca',
+        busca: ['fan'],
+        limite: 5
+    },
+    {
+        id: 'wifi',
+        titulo: 'Placa Wi-Fi',
+        ajuda: 'Adicione Wi-Fi quando a placa-m\u00e3e n\u00e3o tiver rede sem fio integrada.',
+        categoriaLivre: 'Todos',
+        tipo: 'busca',
+        busca: ['wifi'],
+        limite: 5
+    }
+];
+
 function corrigirTexto(texto) {
     if (typeof texto !== 'string') return texto;
     try {
@@ -115,6 +258,46 @@ function formatarMoeda(valor) {
         currency: 'BRL'
     });
 }
+
+function arredondarParaFinal999(valor) {
+    const numero = Number(valor) || 0;
+    if (numero <= 0) return 0;
+    return Number((Math.ceil((numero + 0.01) / 10) * 10 - 0.01).toFixed(2));
+}
+
+const slotsComputadorVirtual = [
+    { id: 'gabinete', label: 'Gabinete', match: produto => normalizar(produto.subcategoria) === 'gabinete' },
+    { id: 'placa-mae', label: 'Placa-mae', match: produto => normalizar(produto.subcategoria) === 'placa mae' },
+    { id: 'processador', label: 'Processador', match: produto => normalizar(produto.subcategoria) === 'processador' },
+    { id: 'memoria', label: 'Memoria RAM', match: produto => normalizar(produto.subcategoria) === 'memoria ram' },
+    { id: 'ssd', label: 'SSD', match: produto => normalizar(produto.subcategoria) === 'ssd' },
+    { id: 'fonte', label: 'Fonte', match: produto => normalizar(produto.subcategoria) === 'fonte atx' },
+    {
+        id: 'cooler',
+        label: 'Cooler',
+        match: produto => {
+            const texto = textoClassificacaoProduto(produto);
+            return normalizar(produto.subcategoria) === 'refrigeracao' && (texto.includes('cooler') || texto.includes('water'));
+        }
+    },
+    {
+        id: 'fans',
+        label: 'Fans',
+        match: produto => {
+            const texto = textoClassificacaoProduto(produto);
+            return texto.includes('fan') || texto.includes('ventoinha');
+        }
+    },
+    {
+        id: 'wifi',
+        label: 'Wi-Fi',
+        match: produto => {
+            const texto = textoClassificacaoProduto(produto);
+            return texto.includes('wifi') || texto.includes('wi-fi') || texto.includes('wireless');
+        }
+    },
+    { id: 'gpu', label: 'GPU', match: produto => normalizar(produto.subcategoria) === 'placa de video' }
+];
 
 function textoClassificacaoProduto(produto) {
     return [
@@ -193,11 +376,55 @@ async function carregarProdutos() {
         }));
 
         montarFiltros();
+        montarPresetsGamemania();
         aplicarFiltros('vitrine');
         aplicarFiltros('hardware');
         atualizarPainelInterno();
     } catch (erro) {
         console.error('Erro ao carregar dados:', erro);
+    }
+}
+
+function montarPresetsGamemania() {
+    const container = document.getElementById('presets-gamemania');
+    if (!container) return;
+
+    container.innerHTML = '';
+    presetsGamemania.forEach(preset => {
+        const botao = document.createElement('button');
+        botao.type = 'button';
+        botao.className = 'preset-button';
+        botao.innerHTML = `
+            <strong>${escaparHtml(preset.nome)}</strong>
+            <span>${escaparHtml(preset.subtitulo)}</span>
+        `;
+        botao.addEventListener('click', () => carregarPresetGamemania(preset.id));
+        container.appendChild(botao);
+    });
+}
+
+function carregarPresetGamemania(presetId) {
+    const preset = presetsGamemania.find(item => item.id === presetId);
+    if (!preset) return;
+
+    orcamentoAtual = [];
+    const faltantes = [];
+
+    preset.itens.forEach(config => {
+        const produto = buscarProdutoPorTermos(config.termos);
+        if (!produto) {
+            faltantes.push(config.termos.join(' '));
+            return;
+        }
+        adicionarProdutoAoOrcamento(produto, config.quantidade || 1);
+    });
+
+    atualizarPainelInterno();
+    const status = document.getElementById('preset-status');
+    if (status) {
+        status.textContent = faltantes.length
+            ? `Configura\u00e7\u00e3o carregada, mas n\u00e3o encontrei: ${faltantes.join(', ')}.`
+            : `${preset.nome} carregado no or\u00e7amento.`;
     }
 }
 
@@ -255,6 +482,165 @@ function renderizarSubFiltrosGabinete() {
     container.style.display = normalizar(estadoFiltros.hardware.categoria) === 'gabinete' ? 'flex' : 'none';
 }
 
+function iniciarAssistente() {
+    wizardState.ativo = true;
+    wizardState.etapa = 0;
+    wizardState.plataforma = null;
+    const box = document.getElementById('wizard-box');
+    if (box) box.style.display = 'block';
+    renderizarEtapaAssistente();
+}
+
+function fecharAssistente() {
+    wizardState.ativo = false;
+    const box = document.getElementById('wizard-box');
+    if (box) box.style.display = 'none';
+}
+
+function voltarEtapaAssistente() {
+    if (!wizardState.ativo || wizardState.etapa === 0) return;
+    wizardState.etapa -= 1;
+    renderizarEtapaAssistente();
+}
+
+function pularEtapaAssistente() {
+    if (!wizardState.ativo) return;
+    wizardState.etapa += 1;
+    renderizarEtapaAssistente();
+}
+
+function abrirListaLivreAssistente() {
+    const etapa = etapasAssistente[wizardState.etapa];
+    if (!etapa) return;
+
+    estadoFiltros.hardware.categoria = etapa.categoriaLivre || 'Todos';
+    estadoFiltros.hardware.tipo = 'Todos';
+    estadoFiltros.hardware.busca = etapa.tipo === 'busca' ? (etapa.busca || []).join(' ') : '';
+    const campo = document.getElementById('busca-hardware');
+    if (campo) campo.value = estadoFiltros.hardware.busca;
+    renderizarBotoesFiltro('hardware', categoriasHardwareFixas);
+    renderizarSubFiltrosGabinete();
+    aplicarFiltros('hardware');
+    document.getElementById('grid-hardware')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderizarEtapaAssistente() {
+    const progress = document.getElementById('wizard-progress');
+    const titulo = document.getElementById('wizard-title');
+    const ajuda = document.getElementById('wizard-help');
+    const options = document.getElementById('wizard-options');
+    if (!progress || !titulo || !ajuda || !options) return;
+
+    if (wizardState.etapa >= etapasAssistente.length) {
+        progress.textContent = 'Montagem conclu\u00edda';
+        titulo.textContent = 'Base montada';
+        ajuda.textContent = 'Revise o or\u00e7amento ao lado e continue personalizando pela lista de produtos quando quiser.';
+        options.innerHTML = '<button class="wizard-option primary" type="button" onclick="fecharAssistente()">Finalizar</button>';
+        return;
+    }
+
+    const etapa = etapasAssistente[wizardState.etapa];
+    const produtos = obterProdutosEtapaAssistente(etapa);
+
+    progress.textContent = `Etapa ${wizardState.etapa + 1} de ${etapasAssistente.length}`;
+    titulo.textContent = etapa.titulo;
+    ajuda.textContent = etapa.ajuda;
+    options.innerHTML = '';
+
+    if (produtos.length === 0) {
+        options.innerHTML = '<p class="wizard-empty">N\u00e3o encontrei sugest\u00f5es autom\u00e1ticas para esta etapa. Use selecionar outros ou pule.</p>';
+        return;
+    }
+
+    produtos.forEach(item => {
+        const produto = item.produto || item;
+        const botao = document.createElement('button');
+        botao.type = 'button';
+        botao.className = 'wizard-option';
+        botao.innerHTML = `
+            <strong>${escaparHtml(item.label || produto.nome)}</strong>
+            <span>Estoque ${produto.estoque} un - ${formatarMoeda(produto.preco_venda)}</span>
+        `;
+        botao.addEventListener('click', () => selecionarProdutoAssistente(etapa, item));
+        options.appendChild(botao);
+    });
+}
+
+function obterProdutosEtapaAssistente(etapa) {
+    if (etapa.tipo === 'termos') {
+        return etapa.opcoes
+            .map(termos => buscarProdutoPorTermos(termos))
+            .filter(Boolean);
+    }
+
+    if (etapa.tipo === 'processador') {
+        return etapa.opcoes
+            .map(opcao => {
+                const produto = buscarProdutoPorTermos(opcao.termos);
+                return produto ? { ...opcao, produto } : null;
+            })
+            .filter(Boolean);
+    }
+
+    if (etapa.tipo === 'placa-mae') {
+        const termos = wizardState.plataforma === 'intel'
+            ? [['h610'], ['lga1700'], ['intel 1700']]
+            : [['a520']];
+        const encontrados = termos.flatMap(grupo => buscarProdutosPorTermos(grupo, 20))
+            .filter(produto => normalizar(produto.subcategoria) === normalizar('Placa M\u00e3e'));
+        return removerDuplicadosPorId(ordenarPorEstoqueECusto(encontrados));
+    }
+
+    if (etapa.tipo === 'categoria') {
+        return ordenarPorEstoqueECusto(listaCompleta.filter(produto =>
+            ehProdutoHardware(produto) &&
+            normalizar(produto.subcategoria || 'Outros') === normalizar(etapa.subcategoria)
+        )).slice(0, etapa.limite || 5);
+    }
+
+    if (etapa.tipo === 'busca') {
+        return buscarProdutosPorTermos(etapa.busca, etapa.limite || 5);
+    }
+
+    return [];
+}
+
+function removerDuplicadosPorId(produtos) {
+    const vistos = new Set();
+    return produtos.filter(produto => {
+        if (vistos.has(produto.id)) return false;
+        vistos.add(produto.id);
+        return true;
+    });
+}
+
+function obterQuantidadeAssistente(etapa) {
+    if (etapa.id !== 'memoria') return 1;
+
+    const resposta = window.prompt('Quantas unidades de memoria RAM deseja adicionar?', '2');
+    if (resposta === null) return null;
+
+    const quantidade = Number.parseInt(resposta, 10);
+    if (!Number.isFinite(quantidade) || quantidade < 1) return 1;
+    return Math.min(quantidade, 8);
+}
+
+function selecionarProdutoAssistente(etapa, item) {
+    const produto = item.produto || item;
+    if (!produto) return;
+    const quantidade = obterQuantidadeAssistente(etapa);
+    if (!quantidade) return;
+
+    adicionarProdutoAoOrcamento(produto, quantidade);
+    atualizarPainelInterno();
+
+    if (etapa.id === 'processador') {
+        wizardState.plataforma = item.plataforma || (normalizar(produto.nome).includes('intel') ? 'intel' : 'ryzen');
+    }
+    wizardState.etapa += 1;
+    renderizarEtapaAssistente();
+}
+
 function selecionarCategoria(area, categoria) {
     estadoFiltros[area].categoria = categoria;
 
@@ -288,6 +674,29 @@ function limparBuscaHardware() {
     aplicarFiltros('hardware');
 }
 
+function ordenarPorEstoqueECusto(produtos) {
+    return [...produtos].sort((a, b) => {
+        const estoqueDiff = (Number(b.estoque) || 0) - (Number(a.estoque) || 0);
+        if (estoqueDiff !== 0) return estoqueDiff;
+        const custoDiff = precoBaseItem(a) - precoBaseItem(b);
+        if (custoDiff !== 0) return custoDiff;
+        return normalizar(a.nome).localeCompare(normalizar(b.nome));
+    });
+}
+
+function produtoContemTermos(produto, termos) {
+    const texto = textoClassificacaoProduto(produto);
+    return termos.map(normalizar).every(termo => texto.includes(termo));
+}
+
+function buscarProdutoPorTermos(termos) {
+    return ordenarPorEstoqueECusto(listaCompleta.filter(produto => produtoContemTermos(produto, termos)))[0] || null;
+}
+
+function buscarProdutosPorTermos(termos, limite = 5) {
+    return ordenarPorEstoqueECusto(listaCompleta.filter(produto => produtoContemTermos(produto, termos))).slice(0, limite);
+}
+
 function aplicarFiltros(area) {
     if (area === 'vitrine') {
         let produtos = listaCompleta.filter(produto => !ehProdutoHardware(produto));
@@ -318,6 +727,13 @@ function aplicarFiltros(area) {
 function ordenarProdutos(produtos, area) {
     const ordenacao = estadoFiltros[area].ordenacao;
     return [...produtos].sort((a, b) => {
+        if (ordenacao === 'estoque-custo') {
+            const estoqueDiff = (Number(b.estoque) || 0) - (Number(a.estoque) || 0);
+            if (estoqueDiff !== 0) return estoqueDiff;
+            const custoDiff = precoBaseItem(a) - precoBaseItem(b);
+            if (custoDiff !== 0) return custoDiff;
+            return normalizar(a.nome).localeCompare(normalizar(b.nome));
+        }
         if (ordenacao === 'preco-asc') return precoOrdenacao(a, area) - precoOrdenacao(b, area);
         if (ordenacao === 'preco-desc') return precoOrdenacao(b, area) - precoOrdenacao(a, area);
         return normalizar(a.nome).localeCompare(normalizar(b.nome));
@@ -445,15 +861,18 @@ function precoParceladoItem(item) {
 function adicionarAoOrcamento(id) {
     const produto = listaCompleta.find(item => Number(item.id) === Number(id));
     if (!produto) return;
-
-    const itemExistente = orcamentoAtual.find(item => Number(item.id) === Number(id));
-    if (itemExistente) {
-        itemExistente.quantidade += 1;
-    } else {
-        orcamentoAtual.push({ ...produto, quantidade: 1 });
-    }
-
+    adicionarProdutoAoOrcamento(produto, 1);
     atualizarPainelInterno();
+}
+
+function adicionarProdutoAoOrcamento(produto, quantidade = 1) {
+    const itemExistente = orcamentoAtual.find(item => Number(item.id) === Number(produto.id));
+    const qtd = Number(quantidade) || 1;
+    if (itemExistente) {
+        itemExistente.quantidade += qtd;
+    } else {
+        orcamentoAtual.push({ ...produto, quantidade: qtd });
+    }
 }
 
 function removerDoOrcamento(id) {
@@ -469,12 +888,34 @@ function removerDoOrcamento(id) {
     atualizarPainelInterno();
 }
 
+function limparOrcamento() {
+    orcamentoAtual = [];
+    atualizarPainelInterno();
+}
+
+function atualizarComputadorVirtual() {
+    slotsComputadorVirtual.forEach(slot => {
+        const elemento = document.getElementById(`pc-slot-${slot.id}`);
+        if (!elemento) return;
+
+        const item = orcamentoAtual.find(produto => slot.match(produto));
+        elemento.classList.toggle('ativo', Boolean(item));
+        elemento.innerHTML = `
+            <span>${slot.label}</span>
+            <strong>${item ? escaparHtml(item.nome) : 'Aguardando'}</strong>
+        `;
+    });
+}
+
 function atualizarPainelInterno() {
     const container = document.getElementById('itens-orcamento');
     const totalVistaEl = document.getElementById('total-vista');
     const totalParceladoEl = document.getElementById('total-parcelado');
     const resumoQuantidadeEl = document.getElementById('resumo-quantidade');
-    if (!container) return;
+    if (!container) {
+        atualizarComputadorVirtual();
+        return;
+    }
 
     container.innerHTML = '';
 
@@ -510,9 +951,13 @@ function atualizarPainelInterno() {
         container.appendChild(linha);
     });
 
-    if (totalVistaEl) totalVistaEl.textContent = formatarMoeda(totalVista);
-    if (totalParceladoEl) totalParceladoEl.textContent = formatarMoeda(totalParcelado);
+    const totalVistaFinal = arredondarParaFinal999(totalVista);
+    const totalParceladoFinal = arredondarParaFinal999(totalParcelado);
+
+    if (totalVistaEl) totalVistaEl.textContent = formatarMoeda(totalVistaFinal);
+    if (totalParceladoEl) totalParceladoEl.textContent = formatarMoeda(totalParceladoFinal);
     if (resumoQuantidadeEl) resumoQuantidadeEl.textContent = quantidadeTotal === 1 ? '1 item' : `${quantidadeTotal} itens`;
+    atualizarComputadorVirtual();
 }
 
 function abrirEspelhoCliente() {
@@ -541,8 +986,8 @@ function abrirEspelhoCliente() {
         corpo.appendChild(linha);
     });
 
-    document.getElementById('cliente-total-vista').textContent = formatarMoeda(totalVista);
-    document.getElementById('cliente-total-parcelado').textContent = formatarMoeda(totalParcelado);
+    document.getElementById('cliente-total-vista').textContent = formatarMoeda(arredondarParaFinal999(totalVista));
+    document.getElementById('cliente-total-parcelado').textContent = formatarMoeda(arredondarParaFinal999(totalParcelado));
     document.getElementById('modal-cliente').style.display = 'flex';
 }
 
