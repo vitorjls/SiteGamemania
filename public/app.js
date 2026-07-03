@@ -366,7 +366,7 @@ function criarCardProduto(produto, isHardware) {
 
     card.innerHTML = `
         <div>
-            <div class="produto-iniciais" aria-hidden="true">${iniciaisProduto(produto.nome)}</div>
+            ${criarVisualProduto(produto)}
             <p class="categoria-tag">${escaparHtml(categoria)}</p>
             <h3 title="${escaparHtml(produto.nome)}">${escaparHtml(produto.nome)}</h3>
             <p class="estoque">Estoque: ${produto.estoque} un</p>
@@ -377,6 +377,45 @@ function criarCardProduto(produto, isHardware) {
         </div>
     `;
     return card;
+}
+
+function criarVisualProduto(produto) {
+    const marca = identificarVisualProduto(produto);
+    if (!marca) {
+        return `<div class="produto-iniciais" aria-hidden="true">${iniciaisProduto(produto.nome)}</div>`;
+    }
+
+    return `
+        <div class="produto-visual ${marca.classe}" aria-label="${escaparHtml(marca.rotulo)}">
+            <span>${escaparHtml(marca.linha1)}</span>
+            <strong>${escaparHtml(marca.linha2)}</strong>
+        </div>
+    `;
+}
+
+function identificarVisualProduto(produto) {
+    const texto = textoClassificacaoProduto(produto);
+
+    if (texto.includes('ryzen 7')) {
+        return { classe: 'brand-ryzen', rotulo: 'AMD Ryzen 7', linha1: 'AMD', linha2: 'RYZEN 7' };
+    }
+    if (texto.includes('ryzen 5')) {
+        return { classe: 'brand-ryzen', rotulo: 'AMD Ryzen 5', linha1: 'AMD', linha2: 'RYZEN 5' };
+    }
+    if (texto.includes('rtx') || texto.includes('geforce') || texto.includes('nvidia')) {
+        return { classe: 'brand-nvidia', rotulo: 'Nvidia GeForce RTX', linha1: 'GEFORCE', linha2: 'RTX' };
+    }
+    if (texto.includes('radeon') || /(^|[^a-z0-9])rx\s?\d{3,4}/.test(texto)) {
+        return { classe: 'brand-radeon', rotulo: 'AMD Radeon', linha1: 'AMD', linha2: 'RADEON' };
+    }
+    if (texto.includes('nvme') || texto.includes('m.2') || texto.includes('m2 pcle') || texto.includes('pcie')) {
+        return { classe: 'brand-nvme', rotulo: 'NVMe', linha1: 'M.2', linha2: 'NVMe' };
+    }
+    if (texto.includes('ssd')) {
+        return { classe: 'brand-ssd', rotulo: 'SSD', linha1: 'STORAGE', linha2: 'SSD' };
+    }
+
+    return null;
 }
 
 function iniciaisProduto(nome) {
@@ -489,7 +528,6 @@ function abrirEspelhoCliente() {
     let totalParcelado = 0;
 
     orcamentoAtual.forEach(item => {
-        const subtotalProduto = item.preco_venda * item.quantidade;
         const subtotalVista = precoVistaItem(item) * item.quantidade;
         const subtotalParcelado = precoParceladoItem(item) * item.quantidade;
         totalVista += subtotalVista;
@@ -499,8 +537,6 @@ function abrirEspelhoCliente() {
         linha.innerHTML = `
             <td>${escaparHtml(item.nome)}</td>
             <td>${item.quantidade}</td>
-            <td>${formatarMoeda(item.preco_venda)}</td>
-            <td><strong>${formatarMoeda(subtotalProduto)}</strong></td>
         `;
         corpo.appendChild(linha);
     });

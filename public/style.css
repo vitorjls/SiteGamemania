@@ -490,6 +490,72 @@ h1 {
     font-weight: 950;
 }
 
+.produto-visual {
+    width: 100%;
+    min-height: 86px;
+    display: grid;
+    align-content: center;
+    gap: 3px;
+    margin-bottom: 12px;
+    padding: 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(21, 21, 19, 0.14);
+    background: var(--black);
+    color: var(--white);
+    overflow: hidden;
+    position: relative;
+}
+
+.produto-visual::after {
+    content: "";
+    position: absolute;
+    width: 82px;
+    height: 82px;
+    right: -24px;
+    top: -24px;
+    border-radius: 50%;
+    border: 14px solid rgba(255, 255, 255, 0.1);
+}
+
+.produto-visual span {
+    position: relative;
+    z-index: 1;
+    font-size: 11px;
+    font-weight: 950;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.86;
+}
+
+.produto-visual strong {
+    position: relative;
+    z-index: 1;
+    font-size: 24px;
+    line-height: 1;
+    font-weight: 950;
+    letter-spacing: 0;
+}
+
+.brand-ryzen {
+    background: linear-gradient(135deg, #211512, #f47a12);
+}
+
+.brand-nvidia {
+    background: linear-gradient(135deg, #101610, #76b900);
+}
+
+.brand-radeon {
+    background: linear-gradient(135deg, #1d1010, #c61c26);
+}
+
+.brand-ssd {
+    background: linear-gradient(135deg, #17202a, #2d9cdb);
+}
+
+.brand-nvme {
+    background: linear-gradient(135deg, #111827, #7c3aed);
+}
+
 .categoria-tag {
     color: var(--orange-dark);
     font-size: 11px;
@@ -595,6 +661,10 @@ h1 {
     background: var(--orange);
     color: var(--black);
     border-color: var(--white);
+}
+
+.dark-theme .produto-visual {
+    border-color: rgba(255, 255, 255, 0.18);
 }
 
 .setup-orcamento {
