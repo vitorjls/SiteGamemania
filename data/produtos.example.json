@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "codigo_hse": "EXEMPLO",
+    "nome": "PRODUTO DE EXEMPLO",
+    "preco_venda": 99.99,
+    "estoque": 1,
+    "categoria": "Exemplo",
+    "grupo_hse": "EXEMPLO",
+    "imagem": "https://via.placeholder.com/200"
+  }
+]

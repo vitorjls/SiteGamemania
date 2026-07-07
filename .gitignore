@@ -1,0 +1,5 @@
+data/produtos.json
+data/clientes.json
+node_modules/
+public/ranking-junho-2026.json
+*.log

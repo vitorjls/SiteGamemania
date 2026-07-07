@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Mania Inform&aacute;tica - &Aacute;rea Interna</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="apple-nav">
+        <div class="nav-content">
+            <button class="brand-button" type="button" onclick="mudarAba('inicio')" aria-label="Game Mania">
+                <img src="logo-gamemania.png" alt="Game Mania Inform&aacute;tica" class="nav-logo">
+                <span><strong>Game Mania</strong><small>Inform&aacute;tica</small></span>
+            </button>
+            <div class="nav-links" aria-label="Navega&ccedil;&atilde;o principal">
+                <a href="#" onclick="mudarAba('inicio')" id="link-inicio" class="ativo">In&iacute;cio</a>
+                <a href="#" onclick="mudarAba('vitrine')" id="link-vitrine">Produtos</a>
+                <a href="#" onclick="mudarAba('setup')" id="link-setup">Or&ccedil;amento PC</a>
+                <a href="/">Site p&uacute;blico</a>
+            </div>
+        </div>
+    </nav>
+
+    <main id="aba-inicio" class="aba-conteudo ativa">
+        <section class="home-hero">
+            <img src="logo-gamemania.png" alt="" class="hero-watermark" aria-hidden="true">
+            <div class="home-content">
+                <p class="eyebrow">@gamemania_es</p>
+                <h1>Game Mania Inform&aacute;tica</h1>
+                <p class="hero-copy">Inform&aacute;tica, games e PCs com venda de acess&oacute;rios, upgrades e montagem de computadores em Vila Velha.</p>
+                <div class="hero-actions">
+                    <button class="btn-primary" type="button" onclick="mudarAba('vitrine')">Ver produtos</button>
+                    <button class="btn-secondary" type="button" onclick="mudarAba('setup')">Fazer or&ccedil;amento</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="profile-band" aria-label="Perfil da loja">
+            <div class="profile-grid">
+                <article class="profile-card">
+                    <span class="profile-kicker">Loja</span>
+                    <h2>Inform&aacute;tica, games e PCs</h2>
+                    <p>Atendimento para vendas, upgrades, acess&oacute;rios e or&ccedil;amentos de computadores.</p>
+                </article>
+                <article class="profile-card">
+                    <span class="profile-kicker">Local</span>
+                    <h2>Shopping Vila Velha - ES</h2>
+                    <p>Perfil p&uacute;blico da loja no Instagram informa atendimento no Shopping Vila Velha.</p>
+                </article>
+                <article class="profile-card">
+                    <span class="profile-kicker">Contato</span>
+                    <h2>WhatsApp: (27) 99277-1900</h2>
+                    <p>Canal informado no perfil para conversar sobre produtos, upgrades e PCs.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="ranking-band" aria-label="Ranking de produtos mais vendidos">
+            <div class="ranking-shell">
+                <div class="ranking-header">
+                    <div>
+                        <p class="eyebrow">Mais vendidos</p>
+                        <h2>Top 100 de Junho 2026</h2>
+                        <p>Ranking por quantidade vendida no HSE, filial Game Mania Shopping Vila Velha, com destaque separado para os produtos de maior lucro.</p>
+                    </div>
+                    <div class="ranking-summary" id="ranking-junho-resumo">Carregando ranking...</div>
+                </div>
+                <div class="ranking-board-header">
+                    <h3>100 mais vendidos</h3>
+                    <span>Ordenado por quantidade vendida</span>
+                </div>
+                <div class="ranking-grid ranking-grid-scroll" id="ranking-junho-lista"></div>
+
+                <div class="ranking-board-header profit-header">
+                    <h3>Maior lucro</h3>
+                    <span>Ordenado por lucro bruto</span>
+                </div>
+                <div class="ranking-grid ranking-grid-scroll ranking-profit-grid" id="ranking-lucro-lista"></div>
+            </div>
+        </section>
+    </main>
+
+    <main id="aba-vitrine" class="aba-conteudo">
+        <section class="section-hero light-hero">
+            <div>
+                <p class="eyebrow dark">Vitrine</p>
+                <h2>Acess&oacute;rios e perif&eacute;ricos</h2>
+                <p>Acess&oacute;rios, conectividade e perif&eacute;ricos para o seu setup.</p>
+            </div>
+        </section>
+
+        <section class="filter-panel" aria-label="Filtros de produtos">
+            <form class="search-control" onsubmit="buscarVitrine(event)">
+                <input id="busca-vitrine" type="search" placeholder="Buscar mouse, headset, cabo, carregador..." autocomplete="off">
+                <button type="submit">Buscar</button>
+                <button type="button" class="btn-clear" onclick="limparBuscaVitrine()">Limpar</button>
+            </form>
+            <div class="filter-row-title">Categorias principais</div>
+            <div class="filtro-bar" id="filtros-vitrine"></div>
+            <div class="filter-row-title" id="titulo-sub-vitrine" style="display: none;">Subcategorias</div>
+            <div class="filtro-bar sub-filtros-vitrine" id="sub-filtros-vitrine"></div>
+            <label class="sort-control" for="ordenacao-vitrine">
+                <span>Ordenar</span>
+                <select id="ordenacao-vitrine" onchange="alterarOrdenacao('vitrine', this.value)">
+                    <option value="nome-az">A-Z</option>
+                    <option value="preco-asc">Menor pre&ccedil;o</option>
+                    <option value="preco-desc">Maior pre&ccedil;o</option>
+                </select>
+            </label>
+        </section>
+
+        <div class="apple-grid" id="grid-acessorios"></div>
+    </main>
+
+    <main id="aba-setup" class="aba-conteudo hardware-special-zone">
+        <section class="section-hero dark-hero">
+            <div>
+                <p class="eyebrow">Or&ccedil;amento PC</p>
+                <h2>Monte o computador</h2>
+                <p>Pe&ccedil;as, upgrades e montagem com condi&ccedil;&atilde;o &agrave; vista ou parcelada.</p>
+            </div>
+        </section>
+
+        <div class="setup-container">
+            <section class="setup-pecas" aria-label="Pe&ccedil;as de computador">
+                <div class="filter-panel dark-filter">
+                    <form class="search-control dark" onsubmit="buscarHardware(event)">
+                        <input id="busca-hardware" type="search" placeholder="Buscar pe&ccedil;a, RTX, DDR4, GPU..." autocomplete="off">
+                        <button type="submit">Buscar</button>
+                        <button type="button" class="btn-clear" onclick="limparBuscaHardware()">Limpar</button>
+                    </form>
+                    <div class="filter-row-title">Categorias</div>
+                    <div class="filtro-bar dark" id="filtros-hardware"></div>
+                    <div class="filtro-bar dark sub-filtros-dark" id="sub-filtros-gabinete"></div>
+                    <label class="sort-control dark" for="ordenacao-hardware">
+                        <span>Ordenar</span>
+                        <select id="ordenacao-hardware" onchange="alterarOrdenacao('hardware', this.value)">
+                            <option value="estoque-custo">Mais estoque</option>
+                            <option value="nome-az">A-Z</option>
+                            <option value="preco-asc">Menor pre&ccedil;o</option>
+                            <option value="preco-desc">Maior pre&ccedil;o</option>
+                        </select>
+                    </label>
+                </div>
+
+                <section class="build-tools" aria-label="Montagem guiada">
+                    <div class="build-tools-header">
+                        <div>
+                            <p class="eyebrow">Game Mania</p>
+                            <h3>Computadores padr&atilde;o</h3>
+                        </div>
+                        <button class="btn-secondary compact" type="button" onclick="iniciarAssistente()">Montar passo a passo</button>
+                    </div>
+
+                    <div class="preset-grid" id="presets-gamemania"></div>
+                    <p class="build-status" id="preset-status" aria-live="polite"></p>
+
+                    <div class="wizard-box" id="wizard-box" style="display: none;">
+                        <div class="wizard-topline">
+                            <span id="wizard-progress">Etapa 1 de 8</span>
+                            <button type="button" onclick="fecharAssistente()">Fechar</button>
+                        </div>
+                        <h3 id="wizard-title">Escolha uma pe&ccedil;a</h3>
+                        <p id="wizard-help"></p>
+                        <div class="wizard-options" id="wizard-options"></div>
+                        <div class="wizard-actions">
+                            <button type="button" onclick="voltarEtapaAssistente()">Voltar</button>
+                            <button type="button" onclick="pularEtapaAssistente()">Pular</button>
+                            <button type="button" onclick="abrirListaLivreAssistente()">Selecionar outros</button>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="apple-grid dark-theme" id="grid-hardware"></div>
+            </section>
+
+            <aside class="setup-orcamento" aria-label="Resumo do or&ccedil;amento">
+                <div class="orcamento-dark-panel">
+                    <div class="budget-header">
+                        <div>
+                            <p class="eyebrow">Resumo</p>
+                            <h2>Seu or&ccedil;amento</h2>
+                        </div>
+                        <span id="resumo-quantidade" class="budget-count">0 itens</span>
+                    </div>
+
+                    <div id="itens-orcamento" class="itens-orcamento-lista dark-list"></div>
+
+                    <div class="totais-box dark-totals">
+                        <p><span>Total normal</span><strong id="total-normal">R$ 0,00</strong></p>
+                        <p><span>Total &agrave; vista</span><strong id="total-vista">R$ 0,00</strong></p>
+                        <p><span>Total parcelado</span><strong id="total-parcelado">R$ 0,00</strong></p>
+                    </div>
+
+                    <div class="discount-panel" aria-label="Condi&ccedil;&otilde;es de desconto">
+                        <div class="discount-actions">
+                            <button class="discount-toggle ativo" id="btn-total-normal" type="button" onclick="definirModoDesconto('normal')">Total normal</button>
+                            <button class="discount-toggle" id="btn-total-vista" type="button" onclick="definirModoDesconto('vista')">Desconto &agrave; vista</button>
+                            <button class="discount-toggle" id="btn-total-parcelado" type="button" onclick="definirModoDesconto('parcelado')">Desconto parcelado</button>
+                        </div>
+                        <details class="discount-editor">
+                            <summary>Adicionar desconto</summary>
+                            <label>Percentual &agrave; vista
+                                <input id="margem-vista" type="number" min="0" max="200" step="1" value="60" onchange="alterarMargemOrcamento('vista', this.value)">
+                            </label>
+                            <label>Percentual parcelado
+                                <input id="margem-parcelado" type="number" min="0" max="200" step="1" value="70" onchange="alterarMargemOrcamento('parcelado', this.value)">
+                            </label>
+                            <small>Use percentuais menores quando quiser reduzir a margem/desconto aplicado no or&ccedil;amento.</small>
+                        </details>
+                    </div>
+
+                    <div class="pc-visual-panel" aria-label="Computador virtual">
+                        <div class="pc-visual-header">
+                            <p class="eyebrow">PC virtual</p>
+                            <h3>Montagem</h3>
+                        </div>
+                        <div class="pc-case">
+                            <div class="pc-slot slot-gabinete" id="pc-slot-gabinete"><span>Gabinete</span><strong>Aguardando</strong></div>
+                            <div class="pc-slot slot-placa" id="pc-slot-placa-mae"><span>Placa-mae</span><strong>Aguardando</strong></div>
+                            <div class="pc-slot slot-cpu" id="pc-slot-processador"><span>Processador</span><strong>Aguardando</strong></div>
+                            <div class="pc-slot slot-memoria" id="pc-slot-memoria"><span>Memoria RAM</span><strong>Aguardando</strong></div>
+                            <div class="pc-slot slot-ssd" id="pc-slot-ssd"><span>SSD</span><strong>Aguardando</strong></div>
+                            <div class="pc-slot slot-fonte" id="pc-slot-fonte"><span>Fonte</span><strong>Aguardando</strong></div>
+                            <div class="pc-slot slot-cooler" id="pc-slot-cooler"><span>Cooler</span><strong>Aguardando</strong></div>
+                            <div class="pc-slot slot-fans" id="pc-slot-fans"><span>Fans</span><strong>Aguardando</strong></div>
+                            <div class="pc-slot slot-wifi" id="pc-slot-wifi"><span>Wi-Fi</span><strong>Aguardando</strong></div>
+                            <div class="pc-slot slot-gpu" id="pc-slot-gpu"><span>GPU</span><strong>Aguardando</strong></div>
+                            <div class="pc-slot slot-protecao" id="pc-slot-protecao"><span>Prote&ccedil;&atilde;o</span><strong>Aguardando</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="budget-actions">
+                        <button class="btn-primary full" type="button" onclick="abrirEspelhoCliente()">Gerar or&ccedil;amento</button>
+                        <button class="btn-clear-cart" type="button" onclick="limparOrcamento()">Esvaziar carrinho</button>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <div id="modal-cliente" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <button class="close-modal" type="button" onclick="fecharEspelhoCliente()" aria-label="Fechar">&times;</button>
+            <div class="modal-header">
+                <img src="logo-gamemania.png" alt="Game Mania Inform&aacute;tica" class="modal-logo">
+                <div>
+                    <h2>Or&ccedil;amento Oficial</h2>
+                    <p>Validade: 7 dias</p>
+                </div>
+            </div>
+            <table class="tabela-cliente">
+                <thead>
+                    <tr>
+                        <th>Produto/Servi&ccedil;o</th>
+                        <th>Qtd</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-cliente-corpo"></tbody>
+            </table>
+            <div class="total-cliente-box">
+                <p>Condi&ccedil;&atilde;o: <strong id="cliente-condicao">Total normal</strong></p>
+                <p>Total: <strong id="cliente-total-final">R$ 0,00</strong></p>
+            </div>
+            <button class="btn-primary btn-imprimir" type="button" onclick="window.print()">Imprimir / Salvar PDF</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
