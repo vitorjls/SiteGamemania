@@ -1495,6 +1495,23 @@ h1 {
     white-space: nowrap;
 }
 
+.show-values-toggle {
+    width: 100%;
+    margin: 4px 0 8px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 8px;
+    padding: 9px 10px;
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--white);
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.show-values-toggle:hover {
+    background: rgba(255, 255, 255, 0.13);
+}
+
 .btn-remove {
     width: 24px;
     height: 24px;

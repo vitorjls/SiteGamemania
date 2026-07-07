@@ -4,6 +4,7 @@ let totaisOrcamentoServidor = { quantidadeTotal: 0, totalNormal: 0, totalVista: 
 let versaoCalculoOrcamento = 0;
 let modoDescontoOrcamento = 'normal';
 let margensOrcamento = { vista: 60, parcelado: 70 };
+let mostrarValoresItensOrcamento = false;
 
 const estadoFiltros = {
     vitrine: { categoria: 'Todos', subcategoria: 'Todos', ordenacao: 'nome-az', busca: '' },
@@ -358,6 +359,17 @@ function formatarMoeda(valor) {
         style: 'currency',
         currency: 'BRL'
     });
+}
+
+function numeroMoeda(valor) {
+    if (typeof valor === 'number') return Number.isFinite(valor) ? valor : 0;
+    const texto = String(valor || '').trim();
+    if (!texto) return 0;
+    const limpo = texto.replace(/[^\d,.-]/g, '');
+    if (limpo.includes(',')) {
+        return Number(limpo.replace(/\./g, '').replace(',', '.')) || 0;
+    }
+    return Number(limpo) || 0;
 }
 
 function formatarQuantidade(valor) {
@@ -749,7 +761,7 @@ async function carregarProdutos() {
             ...item,
             nome: corrigirTexto(item.nome),
             categoria: corrigirTexto(item.categoria),
-            preco_venda: Number(item.preco_venda) || 0,
+            preco_venda: numeroMoeda(item.preco_venda),
             estoque: Number(item.estoque) || 0
         }));
 
@@ -1258,7 +1270,7 @@ function ordenarProdutos(produtos, area) {
 }
 
 function precoOrdenacao(produto, area) {
-    return Number(produto.preco_venda) || 0;
+    return numeroMoeda(produto.preco_venda);
 }
 
 function renderizarAcessorios(produtos) {
@@ -1371,7 +1383,7 @@ function iniciaisProduto(nome) {
 }
 
 function precoBaseItem(item) {
-    return Number(item.preco_venda) || 0;
+    return numeroMoeda(item.preco_venda);
 }
 
 function itensParaCalculoOrcamento() {
@@ -1389,14 +1401,8 @@ function aplicarTotaisOrcamentoServidor(totais) {
         totalParcelado: Number(totais?.totalParcelado) || 0
     };
 
-    const totalNormalEl = document.getElementById('total-normal');
-    const totalVistaEl = document.getElementById('total-vista');
-    const totalParceladoEl = document.getElementById('total-parcelado');
     const resumoQuantidadeEl = document.getElementById('resumo-quantidade');
 
-    if (totalNormalEl) totalNormalEl.textContent = formatarMoeda(totaisOrcamentoServidor.totalNormal);
-    if (totalVistaEl) totalVistaEl.textContent = formatarMoeda(totaisOrcamentoServidor.totalVista);
-    if (totalParceladoEl) totalParceladoEl.textContent = formatarMoeda(totaisOrcamentoServidor.totalParcelado);
     if (resumoQuantidadeEl) {
         resumoQuantidadeEl.textContent = totaisOrcamentoServidor.quantidadeTotal === 1
             ? '1 item'
@@ -1432,12 +1438,18 @@ async function calcularTotaisOrcamentoServidor() {
         return true;
     } catch (erro) {
         console.error('Erro ao calcular orcamento:', erro);
-        const totalVistaEl = document.getElementById('total-vista');
-        const totalParceladoEl = document.getElementById('total-parcelado');
-        if (totalVistaEl) totalVistaEl.textContent = 'Erro';
-        if (totalParceladoEl) totalParceladoEl.textContent = 'Erro';
+        const totalFinalEl = document.getElementById('total-final-resumo');
+        if (totalFinalEl) totalFinalEl.textContent = 'Erro';
         return false;
     }
+}
+
+function atualizarTotalUnicoOrcamento() {
+    const totalSelecionado = obterTotalSelecionadoOrcamento();
+    const label = document.getElementById('total-label');
+    const valor = document.getElementById('total-final-resumo');
+    if (label) label.textContent = totalSelecionado.rotulo;
+    if (valor) valor.textContent = formatarMoeda(totalSelecionado.valor);
 }
 
 function definirModoDesconto(modo) {
@@ -1465,22 +1477,22 @@ function atualizarBotoesDesconto() {
         if (botao) botao.classList.toggle('ativo', modoDescontoOrcamento === modo);
     });
 
-    const normalEl = document.getElementById('total-normal');
-    const vistaEl = document.getElementById('total-vista');
-    const parceladoEl = document.getElementById('total-parcelado');
-    if (normalEl) normalEl.closest('p')?.classList.toggle('total-destaque', modoDescontoOrcamento === 'normal');
-    if (vistaEl) vistaEl.closest('p')?.classList.toggle('total-destaque', modoDescontoOrcamento === 'vista');
-    if (parceladoEl) parceladoEl.closest('p')?.classList.toggle('total-destaque', modoDescontoOrcamento === 'parcelado');
+    atualizarTotalUnicoOrcamento();
 }
 
 function obterTotalSelecionadoOrcamento() {
     if (modoDescontoOrcamento === 'vista') {
-        return { rotulo: `Desconto a vista (${margensOrcamento.vista}%)`, valor: totaisOrcamentoServidor.totalVista };
+        return { rotulo: `Total com desconto a vista`, valor: totaisOrcamentoServidor.totalVista };
     }
     if (modoDescontoOrcamento === 'parcelado') {
-        return { rotulo: `Desconto parcelado (${margensOrcamento.parcelado}%)`, valor: totaisOrcamentoServidor.totalParcelado };
+        return { rotulo: `Total com desconto parcelado`, valor: totaisOrcamentoServidor.totalParcelado };
     }
     return { rotulo: 'Total normal', valor: totaisOrcamentoServidor.totalNormal };
+}
+
+function alternarValoresItensOrcamento() {
+    mostrarValoresItensOrcamento = !mostrarValoresItensOrcamento;
+    atualizarPainelInterno();
 }
 
 function adicionarAoOrcamento(id) {
@@ -1557,10 +1569,9 @@ function atualizarComputadorVirtual() {
 
 function atualizarPainelInterno() {
     const container = document.getElementById('itens-orcamento');
-    const totalNormalEl = document.getElementById('total-normal');
-    const totalVistaEl = document.getElementById('total-vista');
-    const totalParceladoEl = document.getElementById('total-parcelado');
+    const totalFinalEl = document.getElementById('total-final-resumo');
     const resumoQuantidadeEl = document.getElementById('resumo-quantidade');
+    const botaoMostrarValores = document.getElementById('btn-mostrar-valores');
     if (!container) {
         atualizarComputadorVirtual();
         return;
@@ -1573,10 +1584,21 @@ function atualizarPainelInterno() {
     }
 
     let quantidadeTotal = 0;
+    if (botaoMostrarValores) {
+        botaoMostrarValores.textContent = mostrarValoresItensOrcamento
+            ? 'Ocultar valores dos produtos'
+            : 'Mostrar valores dos produtos';
+    }
 
     orcamentoAtual.forEach(item => {
-        const subtotalProduto = item.preco_venda * item.quantidade;
+        const subtotalProduto = numeroMoeda(item.preco_venda) * item.quantidade;
         quantidadeTotal += item.quantidade;
+        const detalheValor = mostrarValoresItensOrcamento
+            ? `${item.quantidade} un - Produto ${formatarMoeda(item.preco_venda)}`
+            : `${item.quantidade} un`;
+        const subtotalHtml = mostrarValoresItensOrcamento
+            ? `<span>${formatarMoeda(subtotalProduto)}</span>`
+            : '';
 
         const linha = document.createElement('div');
         linha.className = 'item-linha';
@@ -1584,19 +1606,17 @@ function atualizarPainelInterno() {
             <span class="item-sigla" aria-hidden="true">${iniciaisProduto(item.nome)}</span>
             <span class="item-info">
                 <strong title="${escaparHtml(item.nome)}">${escaparHtml(item.nome)}</strong>
-                <small>${item.quantidade} un - Produto ${formatarMoeda(item.preco_venda)}</small>
+                <small>${detalheValor}</small>
             </span>
             <span class="item-acoes">
-                <span>${formatarMoeda(subtotalProduto)}</span>
+                ${subtotalHtml}
                 <button class="btn-remove" type="button" onclick="removerDoOrcamento(${item.id})" aria-label="Remover ${escaparHtml(item.nome)}">&times;</button>
             </span>
         `;
         container.appendChild(linha);
     });
 
-    if (totalNormalEl) totalNormalEl.textContent = orcamentoAtual.length ? 'Calculando...' : formatarMoeda(0);
-    if (totalVistaEl) totalVistaEl.textContent = orcamentoAtual.length ? 'Calculando...' : formatarMoeda(0);
-    if (totalParceladoEl) totalParceladoEl.textContent = orcamentoAtual.length ? 'Calculando...' : formatarMoeda(0);
+    if (totalFinalEl) totalFinalEl.textContent = orcamentoAtual.length ? 'Calculando...' : formatarMoeda(0);
     if (resumoQuantidadeEl) resumoQuantidadeEl.textContent = quantidadeTotal === 1 ? '1 item' : `${quantidadeTotal} itens`;
     atualizarComputadorVirtual();
     calcularTotaisOrcamentoServidor();

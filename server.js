@@ -172,13 +172,25 @@ function produtoVitrinePublica(produto) {
 }
 
 function precoBaseItem(item) {
-    return Number(item.preco_custo) || Number(item.preco_venda) || 0;
+    return numeroMoeda(item.preco_custo) || numeroMoeda(item.preco_venda) || 0;
 }
 
 function arredondarParaFinal999(valor) {
     const numero = Number(valor) || 0;
     if (numero <= 0) return 0;
     return Number((Math.ceil((numero + 0.01) / 10) * 10 - 0.01).toFixed(2));
+}
+
+function numeroMoeda(valor) {
+    if (typeof valor === 'number') return Number.isFinite(valor) ? valor : 0;
+    const texto = String(valor || '').trim();
+    if (!texto) return 0;
+
+    const limpo = texto.replace(/[^\d,.-]/g, '');
+    if (limpo.includes(',')) {
+        return Number(limpo.replace(/\./g, '').replace(',', '.')) || 0;
+    }
+    return Number(limpo) || 0;
 }
 
 function normalizarItensOrcamento(itens) {
@@ -423,14 +435,14 @@ app.post('/api/orcamento/calcular', exigirAutenticacao, (req, res) => {
             const produto = produtosPorId.get(item.id);
             if (!produto) return;
 
-            totalNormal += (Number(produto.preco_venda) || 0) * item.quantidade;
+            totalNormal += numeroMoeda(produto.preco_venda) * item.quantidade;
             totalCusto += precoBaseItem(produto) * item.quantidade;
             quantidadeTotal += item.quantidade;
         });
 
         res.json({
             quantidadeTotal,
-            totalNormal: arredondarParaFinal999(totalNormal),
+            totalNormal: Number(totalNormal.toFixed(2)),
             totalVista: arredondarParaFinal999(totalCusto * (1 + margemVista / 100)),
             totalParcelado: arredondarParaFinal999(totalCusto * (1 + margemParcelado / 100)),
             margemVista,
