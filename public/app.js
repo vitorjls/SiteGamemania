@@ -1332,6 +1332,15 @@ function criarCardProduto(produto, isHardware) {
 }
 
 function criarVisualProduto(produto) {
+    const imagem = obterImagemLocalProduto(produto);
+    if (imagem) {
+        return `
+            <div class="produto-foto">
+                <img src="${escaparHtml(imagem)}" alt="${escaparHtml(produto.nome)}" loading="lazy">
+            </div>
+        `;
+    }
+
     const marca = identificarVisualProduto(produto);
     if (!marca) {
         return `<div class="produto-iniciais" aria-hidden="true">${iniciaisProduto(produto.nome)}</div>`;
@@ -1343,6 +1352,20 @@ function criarVisualProduto(produto) {
             <strong>${escaparHtml(marca.linha2)}</strong>
         </div>
     `;
+}
+
+function obterImagemLocalProduto(produto) {
+    const imagem = String(produto.imagem || '').trim();
+    const imagensDisponiveis = [
+        '/images/produtos/gabinete-bluecase-bg064.jpg',
+        '/images/produtos/fonte-bluecase-atx-500w.jpg',
+        '/images/produtos/processador-ryzen-5-5600gt.jpg',
+        '/images/produtos/placa-video-geforce-rtx-5060.jpg',
+        '/images/produtos/memoria-kingston-fury-beast-ddr4.png',
+        '/images/produtos/placa-mae-asus-prime-a520m-k.png'
+    ];
+
+    return imagensDisponiveis.includes(imagem) ? imagem : '';
 }
 
 function identificarVisualProduto(produto) {
