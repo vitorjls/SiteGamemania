@@ -1583,6 +1583,16 @@ function atualizarNomeItemNoEspelho(id, nome) {
     atualizarPainelInterno();
 }
 
+function moverItemNoOrcamento(id, direcao) {
+    const indiceAtual = orcamentoAtual.findIndex(item => Number(item.id) === Number(id));
+    const destino = indiceAtual + Number(direcao);
+    if (indiceAtual < 0 || destino < 0 || destino >= orcamentoAtual.length) return;
+
+    [orcamentoAtual[indiceAtual], orcamentoAtual[destino]] = [orcamentoAtual[destino], orcamentoAtual[indiceAtual]];
+    atualizarPainelInterno();
+    renderizarEspelhoCliente();
+}
+
 function limparOrcamento() {
     orcamentoAtual = [];
     atualizarPainelInterno();
@@ -1670,16 +1680,30 @@ async function abrirEspelhoCliente() {
         return;
     }
 
+    renderizarEspelhoCliente();
+    document.getElementById('modal-cliente').style.display = 'flex';
+}
+
+function renderizarEspelhoCliente() {
     const corpo = document.getElementById('tabela-cliente-corpo');
+    if (!corpo) return;
     corpo.innerHTML = '';
 
-    orcamentoAtual.forEach(item => {
+    orcamentoAtual.forEach((item, indice) => {
         const nomeItem = nomeExibicaoOrcamento(item);
+        const primeiroItem = indice === 0;
+        const ultimoItem = indice === orcamentoAtual.length - 1;
         const linha = document.createElement('tr');
         linha.innerHTML = `
             <td><input class="nome-item-cliente" type="text" value="${escaparHtml(nomeItem)}" onchange="atualizarNomeItemNoEspelho(${item.id}, this.value)" aria-label="Nome do item"></td>
             <td>${item.quantidade}</td>
-            <td class="coluna-acoes-cliente"><button class="btn-edit-name" type="button" onclick="this.closest('tr').querySelector('.nome-item-cliente').focus()" aria-label="Editar nome de ${escaparHtml(nomeItem)}" title="Editar nome">&#9998;</button></td>
+            <td class="coluna-acoes-cliente">
+                <div class="acoes-item-cliente">
+                    <button class="btn-edit-name" type="button" onclick="this.closest('tr').querySelector('.nome-item-cliente').focus()" aria-label="Editar nome de ${escaparHtml(nomeItem)}" title="Editar nome">&#9998;</button>
+                    <button class="btn-order-item" type="button" onclick="moverItemNoOrcamento(${item.id}, -1)" aria-label="Mover ${escaparHtml(nomeItem)} para cima" title="Mover para cima" ${primeiroItem ? 'disabled' : ''}>&#8593;</button>
+                    <button class="btn-order-item" type="button" onclick="moverItemNoOrcamento(${item.id}, 1)" aria-label="Mover ${escaparHtml(nomeItem)} para baixo" title="Mover para baixo" ${ultimoItem ? 'disabled' : ''}>&#8595;</button>
+                </div>
+            </td>
         `;
         corpo.appendChild(linha);
     });
@@ -1687,7 +1711,6 @@ async function abrirEspelhoCliente() {
     const totalSelecionado = obterTotalSelecionadoOrcamento();
     document.getElementById('cliente-condicao').textContent = totalSelecionado.rotulo;
     document.getElementById('cliente-total-final').textContent = formatarMoeda(totalSelecionado.valor);
-    document.getElementById('modal-cliente').style.display = 'flex';
 }
 
 function enviarOrcamentoWhatsApp() {

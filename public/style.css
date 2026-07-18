@@ -1901,14 +1901,41 @@ h1 {
 }
 
 .coluna-acoes-cliente {
-    width: 48px;
+    width: 96px;
     text-align: center !important;
 }
 
-.modal-content .btn-edit-name {
+.acoes-item-cliente {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+}
+
+.modal-content .btn-edit-name,
+.btn-order-item {
+    width: 26px;
+    height: 26px;
     border-color: var(--line);
     background: var(--white);
     color: var(--black);
+}
+
+.btn-order-item {
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1;
+}
+
+.btn-order-item:hover:not(:disabled) {
+    border-color: var(--orange);
+    background: rgba(244, 122, 18, 0.12);
+}
+
+.btn-order-item:disabled {
+    cursor: default;
+    opacity: 0.34;
 }
 
 .cliente-acoes {
