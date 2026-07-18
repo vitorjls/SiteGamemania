@@ -1718,18 +1718,25 @@ function enviarOrcamentoWhatsApp() {
 
     const totalSelecionado = obterTotalSelecionadoOrcamento();
     const itens = orcamentoAtual
-        .map(item => `- ${item.quantidade}x ${nomeExibicaoOrcamento(item)}`)
-        .join('\n');
+        .map(item => `${item.quantidade}x - ${nomeExibicaoOrcamento(item)}`)
+        .join('\n\n');
+    const linhaPagamento = modoDescontoOrcamento === 'parcelado'
+        ? `💳*Total com desconto parcelado: ${formatarMoeda(totalSelecionado.valor)} em 10x sem juros*`
+        : modoDescontoOrcamento === 'vista'
+            ? `💵*Total com desconto a vista: ${formatarMoeda(totalSelecionado.valor)}*`
+            : `💳*Total normal: ${formatarMoeda(totalSelecionado.valor)}*`;
     const mensagem = [
-        '*ORCAMENTO GAME MANIA*',
+        '🎮ORCAMENTO GAME MANIA🎮',
         '',
-        'Ola! Segue a configuracao selecionada:',
+        'Olá! Segue a configuração selecionada:',
+        '',
         itens,
         '',
-        `*${totalSelecionado.rotulo}: ${formatarMoeda(totalSelecionado.valor)}*`,
+        linhaPagamento,
+        '',
         'Validade: 7 dias.',
         '',
-        'Ficamos a disposicao para tirar duvidas.'
+        'Ficamos a disposição para tirar dúvidas.'
     ].join('\n');
 
     window.open(`https://wa.me/?text=${encodeURIComponent(mensagem)}`, '_blank', 'noopener');
