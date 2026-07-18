@@ -1409,6 +1409,10 @@ function precoBaseItem(item) {
     return numeroMoeda(item.preco_venda);
 }
 
+function nomeExibicaoOrcamento(item) {
+    return String(item.nome_orcamento || item.nome || '').trim();
+}
+
 function itensParaCalculoOrcamento() {
     return orcamentoAtual.map(item => ({
         id: item.id,
@@ -1571,6 +1575,17 @@ function removerDoOrcamento(id) {
     atualizarPainelInterno();
 }
 
+function editarNomeItemOrcamento(id) {
+    const item = orcamentoAtual.find(produto => Number(produto.id) === Number(id));
+    if (!item) return;
+
+    const nomeEditado = window.prompt('Nome que aparecerá neste orçamento:', nomeExibicaoOrcamento(item));
+    if (nomeEditado === null) return;
+
+    item.nome_orcamento = nomeEditado.trim();
+    atualizarPainelInterno();
+}
+
 function limparOrcamento() {
     orcamentoAtual = [];
     atualizarPainelInterno();
@@ -1585,7 +1600,7 @@ function atualizarComputadorVirtual() {
         elemento.classList.toggle('ativo', Boolean(item));
         elemento.innerHTML = `
             <span>${slot.label}</span>
-            <strong>${item ? escaparHtml(item.nome) : 'Aguardando'}</strong>
+            <strong>${item ? escaparHtml(nomeExibicaoOrcamento(item)) : 'Aguardando'}</strong>
         `;
     });
 }
@@ -1614,6 +1629,7 @@ function atualizarPainelInterno() {
     }
 
     orcamentoAtual.forEach(item => {
+        const nomeItem = nomeExibicaoOrcamento(item);
         const subtotalProduto = numeroMoeda(item.preco_venda) * item.quantidade;
         quantidadeTotal += item.quantidade;
         const detalheValor = mostrarValoresItensOrcamento
@@ -1626,14 +1642,17 @@ function atualizarPainelInterno() {
         const linha = document.createElement('div');
         linha.className = 'item-linha';
         linha.innerHTML = `
-            <span class="item-sigla" aria-hidden="true">${iniciaisProduto(item.nome)}</span>
+            <span class="item-sigla" aria-hidden="true">${iniciaisProduto(nomeItem)}</span>
             <span class="item-info">
-                <strong title="${escaparHtml(item.nome)}">${escaparHtml(item.nome)}</strong>
+                <strong title="${escaparHtml(nomeItem)}">${escaparHtml(nomeItem)}</strong>
                 <small>${detalheValor}</small>
             </span>
             <span class="item-acoes">
                 ${subtotalHtml}
-                <button class="btn-remove" type="button" onclick="removerDoOrcamento(${item.id})" aria-label="Remover ${escaparHtml(item.nome)}">&times;</button>
+                <span class="item-botoes">
+                    <button class="btn-edit-name" type="button" onclick="editarNomeItemOrcamento(${item.id})" aria-label="Editar nome de ${escaparHtml(nomeItem)}" title="Editar nome no orçamento">&#9998;</button>
+                    <button class="btn-remove" type="button" onclick="removerDoOrcamento(${item.id})" aria-label="Remover ${escaparHtml(nomeItem)}">&times;</button>
+                </span>
             </span>
         `;
         container.appendChild(linha);
@@ -1663,7 +1682,7 @@ async function abrirEspelhoCliente() {
     orcamentoAtual.forEach(item => {
         const linha = document.createElement('tr');
         linha.innerHTML = `
-            <td>${escaparHtml(item.nome)}</td>
+            <td>${escaparHtml(nomeExibicaoOrcamento(item))}</td>
             <td>${item.quantidade}</td>
         `;
         corpo.appendChild(linha);

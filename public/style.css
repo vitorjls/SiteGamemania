@@ -1417,6 +1417,8 @@ h1 {
 .setup-orcamento {
     position: sticky;
     top: 88px;
+    align-self: start;
+    max-height: calc(100dvh - 104px);
 }
 
 .orcamento-dark-panel {
@@ -1425,6 +1427,25 @@ h1 {
     padding: 16px;
     color: var(--white);
     box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28);
+    max-height: calc(100dvh - 104px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(244, 122, 18, 0.9) rgba(255, 255, 255, 0.08);
+}
+
+.orcamento-dark-panel::-webkit-scrollbar {
+    width: 9px;
+}
+
+.orcamento-dark-panel::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.orcamento-dark-panel::-webkit-scrollbar-thumb {
+    background: var(--orange);
+    border: 2px solid #11110f;
+    border-radius: 8px;
 }
 
 .budget-header {
@@ -1513,6 +1534,11 @@ h1 {
     gap: 4px;
 }
 
+.item-botoes {
+    display: flex;
+    gap: 4px;
+}
+
 .item-acoes span {
     color: var(--white);
     font-weight: 900;
@@ -1546,6 +1572,23 @@ h1 {
     cursor: pointer;
     font-size: 16px;
     line-height: 1;
+}
+
+.btn-edit-name {
+    width: 24px;
+    height: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.09);
+    color: var(--white);
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1;
+}
+
+.btn-edit-name:hover {
+    background: rgba(244, 122, 18, 0.28);
+    border-color: var(--orange);
 }
 
 .dark-totals {
@@ -1899,6 +1942,12 @@ h1 {
 
     .setup-orcamento {
         position: static;
+        max-height: none;
+    }
+
+    .orcamento-dark-panel {
+        max-height: none;
+        overflow: visible;
     }
 
     .profile-grid {
