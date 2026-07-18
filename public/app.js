@@ -1575,14 +1575,11 @@ function removerDoOrcamento(id) {
     atualizarPainelInterno();
 }
 
-function editarNomeItemOrcamento(id) {
+function atualizarNomeItemNoEspelho(id, nome) {
     const item = orcamentoAtual.find(produto => Number(produto.id) === Number(id));
     if (!item) return;
 
-    const nomeEditado = window.prompt('Nome que aparecerá neste orçamento:', nomeExibicaoOrcamento(item));
-    if (nomeEditado === null) return;
-
-    item.nome_orcamento = nomeEditado.trim();
+    item.nome_orcamento = String(nome || '').trim();
     atualizarPainelInterno();
 }
 
@@ -1649,10 +1646,7 @@ function atualizarPainelInterno() {
             </span>
             <span class="item-acoes">
                 ${subtotalHtml}
-                <span class="item-botoes">
-                    <button class="btn-edit-name" type="button" onclick="editarNomeItemOrcamento(${item.id})" aria-label="Editar nome de ${escaparHtml(nomeItem)}" title="Editar nome no orçamento">&#9998;</button>
-                    <button class="btn-remove" type="button" onclick="removerDoOrcamento(${item.id})" aria-label="Remover ${escaparHtml(nomeItem)}">&times;</button>
-                </span>
+                <button class="btn-remove" type="button" onclick="removerDoOrcamento(${item.id})" aria-label="Remover ${escaparHtml(nomeItem)}">&times;</button>
             </span>
         `;
         container.appendChild(linha);
@@ -1680,10 +1674,12 @@ async function abrirEspelhoCliente() {
     corpo.innerHTML = '';
 
     orcamentoAtual.forEach(item => {
+        const nomeItem = nomeExibicaoOrcamento(item);
         const linha = document.createElement('tr');
         linha.innerHTML = `
-            <td>${escaparHtml(nomeExibicaoOrcamento(item))}</td>
+            <td><input class="nome-item-cliente" type="text" value="${escaparHtml(nomeItem)}" onchange="atualizarNomeItemNoEspelho(${item.id}, this.value)" aria-label="Nome do item"></td>
             <td>${item.quantidade}</td>
+            <td class="coluna-acoes-cliente"><button class="btn-edit-name" type="button" onclick="this.closest('tr').querySelector('.nome-item-cliente').focus()" aria-label="Editar nome de ${escaparHtml(nomeItem)}" title="Editar nome">&#9998;</button></td>
         `;
         corpo.appendChild(linha);
     });
@@ -1692,6 +1688,28 @@ async function abrirEspelhoCliente() {
     document.getElementById('cliente-condicao').textContent = totalSelecionado.rotulo;
     document.getElementById('cliente-total-final').textContent = formatarMoeda(totalSelecionado.valor);
     document.getElementById('modal-cliente').style.display = 'flex';
+}
+
+function enviarOrcamentoWhatsApp() {
+    if (orcamentoAtual.length === 0) return;
+
+    const totalSelecionado = obterTotalSelecionadoOrcamento();
+    const itens = orcamentoAtual
+        .map(item => `- ${item.quantidade}x ${nomeExibicaoOrcamento(item)}`)
+        .join('\n');
+    const mensagem = [
+        '*ORCAMENTO GAME MANIA*',
+        '',
+        'Ola! Segue a configuracao selecionada:',
+        itens,
+        '',
+        `*${totalSelecionado.rotulo}: ${formatarMoeda(totalSelecionado.valor)}*`,
+        'Validade: 7 dias.',
+        '',
+        'Ficamos a disposicao para tirar duvidas.'
+    ].join('\n');
+
+    window.open(`https://wa.me/?text=${encodeURIComponent(mensagem)}`, '_blank', 'noopener');
 }
 
 function fecharEspelhoCliente() {

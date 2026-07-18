@@ -255,6 +255,7 @@
                     <tr>
                         <th>Produto/Servi&ccedil;o</th>
                         <th>Qtd</th>
+                        <th class="coluna-acoes-cliente">A&ccedil;&atilde;o</th>
                     </tr>
                 </thead>
                 <tbody id="tabela-cliente-corpo"></tbody>
@@ -263,7 +264,10 @@
                 <p>Condi&ccedil;&atilde;o: <strong id="cliente-condicao">Total normal</strong></p>
                 <p>Total: <strong id="cliente-total-final">R$ 0,00</strong></p>
             </div>
-            <button class="btn-primary btn-imprimir" type="button" onclick="window.print()">Imprimir / Salvar PDF</button>
+            <div class="cliente-acoes">
+                <button class="btn-primary btn-imprimir" type="button" onclick="window.print()">Imprimir / Salvar PDF</button>
+                <button class="btn-whatsapp" type="button" onclick="enviarOrcamentoWhatsApp()">Enviar no WhatsApp</button>
+            </div>
         </div>
     </div>
 
